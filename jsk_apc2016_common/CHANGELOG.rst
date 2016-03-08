@@ -2,6 +2,11 @@
 Changelog for package jsk_apc2016_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.1 (2016-03-08)
+------------------
+* fix maintainer/author in package.xml
+* Contributors: Kei Okada
+
 0.2.0 (2016-03-08)
 ------------------
 * Initialize common package for APC2016
