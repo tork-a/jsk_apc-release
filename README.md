@@ -1,81 +1,89 @@
-jsk_2015_05_baxter_apc
-======================
+jsk\_apc
+=======
+
+[![](https://travis-ci.org/start-jsk/jsk_apc.svg)](https://travis-ci.org/start-jsk/jsk_apc)
+[![Gitter](https://badges.gitter.im/start-jsk/jsk_apc.svg)](https://gitter.im/start-jsk/jsk_apc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 
 Usage
 -----
 
-### Demonstration on Real World
-
-Real world demonstration for APC2015 can be done on ``baxter@sheeta.jsk.imi.i.u-tokyo.ac.jp``.
-
-- Prepare json.
-- Setup objects in Kiva.
-
-```bash
-
-baxter@sheeta $ roslaunch jsk_2015_05_baxter_apc baxter.launch
-baxter@sheeta $ roslaunch jsk_2015_05_baxter_apc setup_torso.launch
-
-baxter@sheeta $ ssh doura
-baxter@doura $ tmux
-# on a tmux session
-baxter@doura $ sudo -s  # necessary for launch kinect2 with ssh login
-baxter@doura $ roslaunch jsk_2015_05_baxter_apc setup_head.launch
-# detach from the tmux session and logout from doura here
-
-baxter@sheeta $ roslaunch jsk_2015_05_baxter_apc main.launch json:=$(rospack find jsk_2015_05_baxter_apc)/json/demo_1.json
-
-# optional visualization
-$ rviz -d $(rospack find jsk_2015_05_baxter_apc)/rvizconfig/segmentation.rviz  # check object segmentation in each bin
-$ rviz -d $(rospack find jsk_2015_05_baxter_apc)/rvizconfig/real_demo.rviz  # visualization for demo
-
-```
-
-https://github.com/start-jsk/jsk_apc/blob/master/jsk_2015_05_baxter_apc/json/demo_1.json
-
-<img src="images/setup_demo_1.jpg" width="16%" />
-<img src="images/real_world.jpg" width="32%" />
-<img src="images/real_world_rviz.jpg" width="32%" />
-
-<a href="https://www.youtube.com/watch?v=G-A-sEThWAQ">
-  <img src="images/apc2015_real_demo.png" alt="Amazon Picking Challenge 2015 Real World Demonstration" width="40%" />
-</a>
+See [jsk_2015_05_baxter_apc](jsk_2015_05_baxter_apc#jsk_2015_05_baxter_apc).
 
 
-### Demonstration on Simulation
-
-Real world demonstration for APC2015 can be done on any computers with ROS indigo.
-
-```bash
-
-roslaunch jsk_2015_05_baxter_apc baxter_sim.launch kiva:=true
-roslaunch jsk_2015_05_baxter_apc setup.launch
-roslaunch jsk_2015_05_baxter_apc main.launch json:=$(rospack find jsk_apc2015_common)/json/f2.json
-
-# optional visualization
-rviz -d $(rospack find jsk_2015_05_baxter_apc)/rvizconfig/gazebo_demo.rviz  # visualization for demo
-
-```
-
-<a href="https://www.youtube.com/watch?v=uV6XctamwEA">
-  <img src="images/apc2015_gazebo_demo.png" alt="Amazon Picking Challenge 2015 Gazebo Simulation" width="40%" />
-</a>
-
-
-Shared Files
-------------
-
-READONLY: https://drive.google.com/drive/u/1/folders/0B9P1L--7Wd2vS1pjRENUMlFPYlU
-
-Google Drive folder is shared.
-There are shared files like log files and datasets.
-
-
-Testing
+Install
 -------
 
-```bash
 
-catkin run_tests jsk_2015_05_baxter_apc --no-deps
+### Required
 
+1. Install the ROS. [Instructions for ROS indigo on Ubuntu 14.04](http://wiki.ros.org/indigo/Installation/Ubuntu).
+2. [Setup your ROS environment](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment).
+3. Build catkin workspace for [jsk\_apc](https://github.com/start-jsk/jsk_apc):
+
+```sh
+$ mkdir -p ~/ros/ws_jsk_apc/src && cd ~/ros/ws_jsk_apc/src
+$ wstool init . https://raw.githubusercontent.com/start-jsk/jsk_apc/master/jsk_2015_05_baxter_apc/rosinstall
+$ cd ..
+$ rosdep install -y -r --from-paths .
+$ sudo apt-get install python-catkin-tools ros-indigo-jsk-tools
+$ catkin build
+$ source devel/setup.bash
+```
+
+* Edit `/etc/hosts`:
+
+```
+133.11.216.214 baxter 011310P0014.local
+```
+
+* Add below in your `~/.bashrc`:
+```
+$ rossetmaster baxter.jsk.imi.i.u-tokyo.ac.jp
+$ rossetip
+
+$ # we recommend below setup (see http://jsk-docs.readthedocs.org/en/latest/jsk_common/doc/jsk_tools/cltools/setup_env_for_ros.html)
+$ echo """
+rossetip
+rosdefault
+""" >> ~/.bashrc
+$ rossetdefault baxter  # set ROS_MASTER_URI as http://baxter:11311
+```
+
+
+### Optional
+
+**Setup Kinect2**
+
+Please follow [Instructions at code-iai/iai\_kinect2](https://github.com/code-iai/iai_kinect2#install),
+however, maybe you have error with the master branch. In that case, please use
+[this rosinstall](https://github.com/start-jsk/jsk_apc/blob/master/kinect2.rosinstall).
+
+**Setup rosserial + vacuum gripper**
+
+Write below in `/etc/udev/rules.d/90-rosserial.rules`:
+
+```
+# ATTR{product}=="rosserial"
+SUBSYSTEM=="tty", MODE="0666"
+```
+
+**Setup SSH**
+
+Write below in `~/.ssh/config`:
+
+```
+Host baxter
+  HostName baxter.jsk.imi.i.u-tokyo.ac.jp
+  User ruser  # password: rethink
+```
+
+
+If you have problem...
+----------------------
+
+* Run below to synchronize the time with robot. Time synchronization is crucial.:
+
+```
+$ sudo ntpdate baxter.jsk.imi.i.u-tokyo.ac.jp
 ```
