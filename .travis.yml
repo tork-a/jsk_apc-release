@@ -1,0 +1,27 @@
+sudo: false
+
+language: generic
+
+env:
+  global:
+    - BUILDER=catkin
+    - NO_SUDO=true
+    - NOT_TEST_INSTALL=true
+    - USE_DEB=false
+    - ROS_PARALLEL_JOBS="-j8"
+    - ROSWS=wstool
+  matrix:
+    - ROS_DISTRO=indigo
+    - ROS_DISTRO=jade
+
+matrix:
+  allow_failures:
+    - env: ROS_DISTRO=jade
+
+script: source .travis/travis.sh
+
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+  slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
