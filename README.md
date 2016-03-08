@@ -1,16 +1,6 @@
 jsk\_apc
 =======
 
-[![](https://travis-ci.org/start-jsk/jsk_apc.svg)](https://travis-ci.org/start-jsk/jsk_apc)
-[![Gitter](https://badges.gitter.im/start-jsk/jsk_apc.svg)](https://gitter.im/start-jsk/jsk_apc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-
-Usage
------
-
-See [jsk_2015_05_baxter_apc](jsk_2015_05_baxter_apc#jsk_2015_05_baxter_apc).
-
-
 Install
 -------
 
@@ -18,72 +8,57 @@ Install
 ### Required
 
 1. Install the ROS. [Instructions for ROS indigo on Ubuntu 14.04](http://wiki.ros.org/indigo/Installation/Ubuntu).
-2. [Setup your ROS environment](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment).
+2. [Setup your ROS environment](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment). **Please make sure that you're using [Shadow Fixed Repository](http://wiki.ros.org/ShadowRepository)**
+
+  ```sh
+$ cat /etc/apt/sources.list.d/ros-latest.list
+#deb http://packages.ros.org/ros/ubuntu trusty main
+deb http://packages.ros.org/ros-shadow-fixed/ubuntu trusty main
+$ sudo apt-get update
+$ sudo apt-get dist-upgrade
+  ```
+
 3. Build catkin workspace for [jsk\_apc](https://github.com/start-jsk/jsk_apc):
 
 ```sh
 $ mkdir -p ~/ros/ws_jsk_apc/src && cd ~/ros/ws_jsk_apc/src
-$ wstool init . https://raw.githubusercontent.com/start-jsk/jsk_apc/master/jsk_2015_05_baxter_apc/rosinstall
+$ wstool init . https://raw.githubusercontent.com/start-jsk/jsk_apc/master/jsk_2016_01_baxter_apc/rosinstall
 $ cd ..
-$ rosdep install -y -r --from-paths .
-$ sudo apt-get install python-catkin-tools ros-indigo-jsk-tools
+$ rosdep install -y -r --from-paths . --ignore-src
 $ catkin build
 $ source devel/setup.bash
 ```
 
-* Edit `/etc/hosts`:
-
+As of 2016/1/27, we're using following version for baxter simulation
 ```
-133.11.216.214 baxter 011310P0014.local
-```
-
-* Add below in your `~/.bashrc`:
-```
-$ rossetmaster baxter.jsk.imi.i.u-tokyo.ac.jp
-$ rossetip
-
-$ # we recommend below setup (see http://jsk-docs.readthedocs.org/en/latest/jsk_common/doc/jsk_tools/cltools/setup_env_for_ros.html)
-$ echo """
-rossetip
-rosdefault
-""" >> ~/.bashrc
-$ rossetdefault baxter  # set ROS_MASTER_URI as http://baxter:11311
+$ rosrun jsk_2016_01_baxter_apc check_baxter_pkg_version.sh
+rosversion baxter_core_msgs     1.2.0
+rosversion baxter_description   1.2.0
+rosversion baxter_gazebo        1.2.12
+rosversion baxter_interface     1.2.0
+rosversion baxter_maintenance_msgs 1.2.0
+rosversion baxter_sim_controllers  1.2.12
+rosversion baxter_sim_hardware  1.2.12
+rosversion baxter_sim_io        1.2.12
+rosversion baxter_sim_kinematics   1.2.12
+rosversion baxter_tools         1.2.0
+rosversion baxtereus            1.0.1
 ```
 
+Usage
+-----
 
-### Optional
+### Run Demo on Gazebo Simulator
 
-**Setup Kinect2**
-
-Please follow [Instructions at code-iai/iai\_kinect2](https://github.com/code-iai/iai_kinect2#install),
-however, maybe you have error with the master branch. In that case, please use
-[this rosinstall](https://github.com/start-jsk/jsk_apc/blob/master/kinect2.rosinstall).
-
-**Setup rosserial + vacuum gripper**
-
-Write below in `/etc/udev/rules.d/90-rosserial.rules`:
-
-```
-# ATTR{product}=="rosserial"
-SUBSYSTEM=="tty", MODE="0666"
-```
-
-**Setup SSH**
-
-Write below in `~/.ssh/config`:
-
-```
-Host baxter
-  HostName baxter.jsk.imi.i.u-tokyo.ac.jp
-  User ruser  # password: rethink
+```sh
+$ roslaunch jsk_2016_01_baxter_apc baxter_pick.launch
 ```
 
 
-If you have problem...
-----------------------
+Shared Files
+------------
 
-* Run below to synchronize the time with robot. Time synchronization is crucial.:
+READ/WRITE: https://drive.google.com/drive/u/1/folders/0B9P1L--7Wd2vLXo1TGVYLVh3aE0
 
-```
-$ sudo ntpdate baxter.jsk.imi.i.u-tokyo.ac.jp
-```
+Google Drive folder is shared.
+There are shared files like log files and datasets.
