@@ -1,4 +1,4 @@
-From fe09cfc2f5203682ee0da38253733c891625c5de Mon Sep 17 00:00:00 2001
+From a08d5d26a35b4f45d590f64b495527b050fc0962 Mon Sep 17 00:00:00 2001
 From: Kei Okada <k-okada@jsk.t.u-tokyo.ac.jp>
 Date: Tue, 8 Mar 2016 19:21:06 +0900
 Subject: [PATCH] disable python pip package
@@ -8,7 +8,7 @@ Subject: [PATCH] disable python pip package
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/package.xml b/package.xml
-index ee8f752..f5f93b3 100644
+index c8ca913..cf49e4e 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -29,13 +29,13 @@
