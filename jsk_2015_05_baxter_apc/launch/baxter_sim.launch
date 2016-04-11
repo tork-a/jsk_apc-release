@@ -4,7 +4,7 @@
   <param name="/apc_on_gazebo" type="bool" value="true" />
 
   <!-- these are the arguments you can pass this launch file, for example paused:=true -->
-  <arg name="kiva" default="false"/>
+  <arg name="kiva" default="true"/>
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
@@ -26,10 +26,10 @@
 
   <!-- Load the URDF into the ROS Parameter Server -->
   <param name="robot_description"
-         command="$(find xacro)/xacro.py $(find jsk_2015_05_baxter_apc)/urdf/baxter_sim.xacro" />
+         command="$(find xacro)/xacro.py $(find jsk_2015_05_baxter_apc)/robots/baxter_sim.xacro" />
 
   <!-- Load the software version into the ROS Parameter Server -->
-  <param name="rethink/software_version" value="1.1.0" />
+  <param name="rethink/software_version" value="1.2.0" />
 
   <!-- Publish a static transform between the world and the base of the robot -->
   <node pkg="tf" type="static_transform_publisher" name="base_to_world" args="0 0 0 0 0 0 world base 100" />
@@ -70,7 +70,9 @@
     <rosparam command="load" file="$(find jsk_2015_05_baxter_apc)/config/kiva_pod_interactive_marker_sim.yaml" />
   </node>
 
-  <!-- setup baxter gazebo -->
-  <node pkg="jsk_2015_05_baxter_apc" type="setup_baxter_gazebo.py" name="setup_baxter_gazebo" output="screen" />
+  <!-- initialize baxter gazebo -->
+  <node name="initialize_baxter"
+        pkg="jsk_2015_05_baxter_apc" type="initialize_baxter.py"
+        output="screen" />
 
 </launch>
