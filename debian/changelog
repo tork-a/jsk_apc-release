@@ -1,0 +1,40 @@
+ros-indigo-jsk-apc2016-common (0.2.3-0trusty) trusty; urgency=high
+
+  * Data
+    + add apc2016 object_data
+  * Test
+    + Add roslint_test for python library
+    + Add test for python library
+  * Data
+    + Doc for python lib
+  * Visualization
+    + Visualize json for stow task
+    + visualize stow json
+  * Contributors: Heecheol Kim, Kentaro Wada, Shingo Kitagawa
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Sun, 10 Apr 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc2016-common (0.2.2-0trusty) trusty; urgency=high
+
+  * fix gmail for iory and wkentaro
+  * Contributors: Kei Okada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Mon, 07 Mar 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc2016-common (0.2.1-0trusty) trusty; urgency=high
+
+  * fix maintainer/author in package.xml
+  * Contributors: Kei Okada
+
+ -- Kentaro Wada <wkentaro@gmail.com>  Mon, 07 Mar 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc2016-common (0.2.0-0trusty) trusty; urgency=high
+
+  * Initialize common package for APC2016
+    * Fix version number of jsk_apc2016_common
+    * Add object data for APC2016
+  * Contributors: Kentaro Wada
+
+ -- wkentaro <wkentaro@todo.todo>  Mon, 07 Mar 2016 15:00:00 -0000
+
+
