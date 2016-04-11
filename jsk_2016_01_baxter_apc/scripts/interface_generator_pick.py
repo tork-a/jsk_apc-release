@@ -38,18 +38,20 @@
 
 
 # This is demo program of pick task json file generator
-# extra_item_(number) on CONST_ITEM_NAMES must be changed when exact item list is announced by Amazon
 '''
-Usage : python interface_generator_pick.py
-This generates apc_pick.json at ../json directory
+Usage : python interface_generator_pick.py {version_of_pick}
+ex) python interface_generator_pick.py 2 => generates pick_layout_2.json at ../json directory
 '''
 import copy
 import json
 import random
 import os
+import jsk_apc2016_common
 #-------------------------------------------------------------------------------
 
+
 # define our bin and item names to use
+
 CONST_BIN_NAMES = ['bin_A',
                    'bin_B',
                    'bin_C',
@@ -63,141 +65,140 @@ CONST_BIN_NAMES = ['bin_A',
                    'bin_K',
                    'bin_L']
 
-CONST_ITEM_NAMES = ["oreo_mega_stuf",
-                    "champion_copper_plus_spark_plug",
-                    "expo_dry_erase_board_eraser",
-                    "kong_duck_dog_toy",
-                    "genuine_joe_plastic_stir_sticks",
-                    "munchkin_white_hot_duck_bath_toy",
-                    "crayola_64_ct",
-                    "mommys_helper_outlet_plugs",
-                    "sharpie_accent_tank_style_highlighters",
-                    "kong_air_dog_squeakair_tennis_ball",
-                    "stanley_66_052",
-                    "safety_works_safety_glasses",
-                    "dr_browns_bottle_brush",
-                    "laugh_out_loud_joke_book",
-                    "cheezit_big_original",
-                    "paper_mate_12_count_mirado_black_warrior",
-                    "feline_greenies_dental_treats",
-                    "elmers_washable_no_run_school_glue",
-                    "mead_index_cards",
-                    "rolodex_jumbo_pencil_cup",
-                    "first_years_take_and_toss_straw_cup",
-                    "highland_6539_self_stick_notes",
-                    "mark_twain_huckleberry_finn",
-                    "kyjen_squeakin_eggs_plush_puppies",
-                    "kong_sitting_frog_dog_toy",
-                    "extra_item_1",
-                    "extra_item_2",
-                    "extra_item_3",
-                    "extra_item_4",
-                    "extra_item_5",
-                    "extra_item_6",
-                    "extra_item_7",
-                    "extra_item_8",
-                    "extra_item_9",
-                    "extra_item_10",
-                    "extra_item_11",
-                    "extra_item_12",
-                    "extra_item_13",
-                    "extra_item_14",
-                    "extra_item_15"]
-
 NBINS = len(CONST_BIN_NAMES)
-N_TOTAL_ITEMS = 50
+N1_2_BINS = 3 + random.randint(0,1)
+N3_4_BINS = 5 + random.randint(0,1)
+N5__BINS = NBINS - (N1_2_BINS + N3_4_BINS) #assumed to be more than 5 items
+N_TOTAL_ITEMS = 47  ###CHANGE THIS TO 50 AFTER FULL ITEMS BE DELIEVERED FROM AMAZON
+
+ITEMS_DATA = jsk_apc2016_common.get_object_data()
+CONST_ITEM_NAMES = []
+CONST_N_ITEMS=[]
+for item_data in ITEMS_DATA :
+    CONST_ITEM_NAMES.append(item_data['name'])
+    CONST_N_ITEMS.append(item_data['stock'])
+
+class InterfaceGeneratorPick():
+    def __init__ (self):
+        self.count_items = N_TOTAL_ITEMS
+        self.bin_contents = {bin_name:[] for bin_name in CONST_BIN_NAMES}
+        self.bin_list = [1] * NBINS
+        self.bin_check = [False] * NBINS
+        self.items_bins = copy.deepcopy(CONST_ITEM_NAMES) # create a destroyable copy of the items
+        self.items_stock = copy.deepcopy(CONST_N_ITEMS)
+        self.abins = copy.deepcopy(CONST_BIN_NAMES) # create a destroyable copy of the bins
+
+    def run(self):
+        self.num_items_bin()
+        self.select_item_bin()
+        self.gen_workorder()
 
 
-# generate the bin contents data structure
-#-------------------------------------------------------------------------------
-bin_contents = {bin_name:[] for bin_name in CONST_BIN_NAMES}
-bin_list = [1] * len(CONST_BIN_NAMES)
-items_bins = copy.deepcopy(CONST_ITEM_NAMES) # create a destroyable copy of the items
-items_tote = copy.deepcopy(CONST_ITEM_NAMES)
-abins = copy.deepcopy(CONST_BIN_NAMES) # create a destroyable copy of the bins
+    # number of items stored at each bin
+    def num_items_bin(self):
+        for i in range(N5__BINS):
+            while True:
+                index = random.randint(0, NBINS - 1)
+                if self.bin_check[index] == False:
+                    break
+            n_item = random.randint(5,10)
+            self.bin_list[index] = n_item
+            self.count_items -= n_item
+            self.bin_check[index] = True
 
-# number of items stored at each bin
+        for i in range(N3_4_BINS):
+            while True:
+                index = random.randint(0, NBINS - 1)
+                if self.bin_check[index] == False:
+                    break
+            n_item = random.randint(3,4)
+            self.bin_list[index] = n_item
+            self.count_items -= n_item
+            self.bin_check[index] = True
 
-for i in range(0,N_TOTAL_ITEMS - 1 * len(CONST_BIN_NAMES)):
-    index = random.randint(0,len(bin_list) - 1)
-    bin_list[index] += 1
+        while self.count_items > 6:
+            while True:
+                index = random.randint(0, NBINS - 1)
+                if self.bin_check[index] == True:
+                    break
+            self.bin_list[index] += 1
+            self.count_items -= 1
 
-if not sum(bin_list) == N_TOTAL_ITEMS:
-    print "warning : number of items unmatched"
+        while self.count_items < N1_2_BINS:
+            while True:
+                index = random.randint(0, NBINS - 1)
+                if (self.bin_check[index] == True) and (self.bin_list[index] > 1):
+                    break
+            self.bin_list[index] -= 1
+            self.count_items += 1
 
-while max(bin_list) > 10:
-    index = bin_list.index(max(bin_list))
-    bin_list[index] -= 1
-    index = random.randint(0,len(bin_list) - 1)
-    bin_list[index] += 1
+        n_1 = - self.count_items + 2 * N1_2_BINS
+        n_2 =  self.count_items - N1_2_BINS
 
-# making one bin with more than 8 items
-index = random.randint(0,len(bin_list) - 1)
-prev_num = bin_list[index]
-num_item = random.randint(8,10)
-i = num_item - prev_num
-while i > 0 :
-    this_index = random.randint(0,len(bin_list) - 1)
-    if not this_index == index :
-        if bin_list[this_index] > 2 :
-            i -= 1
-            bin_list[this_index] -= 1
-            bin_list[index] += 1
+        for i in range(n_2):
+            while True:
+                index = random.randint(0, NBINS - 1)
+                if self.bin_check[index] == False:
+                    break
+            n_item = 2
+            self.bin_list[index] = n_item
 
+        if not sum(self.bin_list) == N_TOTAL_ITEMS:
+            print "warning : number of items unmatched. Recommended to try again"
+            print "number of total items should be: {}".format(N_TOTAL_ITEMS)
+            print "sum of items in bin: {}".format(sum(self.bin_list))
 
+    # generate all item bins
+    def select_item_bin(self):
+        abins_ = copy.deepcopy(self.abins)
+        bin_contents_ = copy.deepcopy(self.bin_contents)
+        for i in range(0,NBINS):
+            bin_name = random.choice(abins_)
+            abins_.remove(bin_name)
+            item_list = []
+            items_stock_ = copy.deepcopy(self.items_stock)
+            for j in range(0,self.bin_list[i]):
+                while True:
+                    item_index = random.randint(0,len(self.items_bins) - 1)
+                    if (items_stock_[item_index] > 0):
+                        item_name = self.items_bins[item_index]
+                        items_stock_[item_index] -= 1
+                        break
+                item_list.append(item_name)
+            bin_contents_[bin_name] = item_list
+        self.abins = abins_
+        self.items_stock = items_stock_
+        self.bin_contents = bin_contents_
+        no_items = [x for x in self.items_stock if x < 0]
+        if len(no_items) > 0:
+            print "warning: not enough items expected for this json. Please try again"
 
-# generate all item bins
-# make two bin with multiple copy of items
+    # generate the work order data structure
+    def gen_workorder(self):
+        self.work_order = [{'bin':bin_name,'item':item_name} for bin_name in CONST_BIN_NAMES
+                    for item_name in (self.bin_contents[bin_name][0:1])]
 
-for i in range(0,len(bin_list)):
-    bin_name = random.choice(abins)
-    abins.remove(bin_name)
-    if i == 0 :
-        for j in range(0,bin_list[i]-1):
-            item_name = random.choice(items_bins)
-            bin_contents[bin_name].append(item_name)        
+    # write the dictionary to the appropriately names json file
+    def write_json(self):
+        data = {'bin_contents': self.bin_contents, 'work_order': self.work_order}
+        this_dir = os.path.dirname(os.path.abspath(__file__))
+        output_dir = os.path.join(this_dir,'../json')
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
+        os.chdir(output_dir)
+        i=1
+        while True:
+            filename  = 'pick_layout_'+str(i)+'.json' 
+            if os.path.isfile(filename):
+                i +=1
+            else:
+                with open(filename, 'w') as outfile:
+                    json.dump(data, outfile, sort_keys=True, indent=4, separators=(',',': '))
+                print(filename+ ' generated at ../json')
+                os.chdir(this_dir)
+                break
 
-        if bin_list[i] == 1 :
-            item_name = random.choice(items_bins)
-            bin_contents[bin_name].append(item_name)
-            bin_contents[bin_name].append(item_name)
-        else :
-            item_name = bin_contents[bin_name][-1]
-            bin_contents[bin_name].append(item_name)
-      
-    elif i == 1 :
-        for j in range(0,bin_list[i]-1):
-            item_name = random.choice(items_bins)
-            bin_contents[bin_name].append(item_name)        
-
-        if bin_list[i] == 1 :
-            item_name = random.choice(items_bins)
-            bin_contents[bin_name].append(item_name)
-            bin_contents[bin_name].append(item_name)
-        else :
-            item_name = bin_contents[bin_name][-1]
-            bin_contents[bin_name].insert(0,item_name)
-      
-    else :
-        for j in range(0,bin_list[i]):
-            item_name = random.choice(items_bins)
-            bin_contents[bin_name].append(item_name)
-
-
-# generate the work order data structure
-#-------------------------------------------------------------------------------
-work_order = [{'bin':bin_name,'item':item_name} for bin_name in CONST_BIN_NAMES
-              for item_name in (bin_contents[bin_name][0:1])]
-
-# write the dictionary to the appropriately names json file
-#-------------------------------------------------------------------------------
-data = {'bin_contents': bin_contents, 'work_order': work_order}
-this_dir = os.path.dirname(os.path.abspath(__file__))
-output_dir = os.path.join(this_dir,'../json')
-if not os.path.exists(output_dir):
-    os.mkdir(output_dir)
-os.chdir(output_dir)
-with open('apc_pick.json', 'w') as outfile:
-    json.dump(data, outfile, sort_keys=True, indent=4, separators=(',',': '))
-print('apc_pick.json generated at ../json')
-os.chdir(this_dir)
+if __name__ == "__main__":
+    interface_pick = InterfaceGeneratorPick()
+    interface_pick.run()
+    interface_pick.write_json()
