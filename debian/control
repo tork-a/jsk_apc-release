@@ -1,0 +1,12 @@
+Source: ros-indigo-jsk-2016-01-baxter-apc
+Section: misc
+Priority: extra
+Maintainer: pazeshun <pazeshun3684@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), libruby1.9.1, ros-indigo-catkin, ros-indigo-jsk-2015-05-baxter-apc, ros-indigo-roseus, ruby1.9.1, ruby1.9.1-dev
+Homepage: 
+Standards-Version: 3.9.2
+
+Package: ros-indigo-jsk-2016-01-baxter-apc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-baxter-gazebo, ros-indigo-baxter-sim-controllers, ros-indigo-baxter-sim-io, ros-indigo-gazebo-ros, ros-indigo-jsk-2015-05-baxter-apc, ros-indigo-jsk-interactive-marker
+Description: Common stacks for Amazon Picking Challenge 2016
