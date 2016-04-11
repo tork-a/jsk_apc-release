@@ -3,7 +3,7 @@
 
   <!-- custom baxter params -->
   <param name="/robot_description"
-         command="$(find xacro)/xacro.py $(find jsk_2015_05_baxter_apc)/urdf/baxter.xacro" />
+         command="$(find xacro)/xacro.py $(find jsk_2015_05_baxter_apc)/robots/baxter.xacro" />
   <node name="robot_state_publisher"
         pkg="robot_state_publisher" type="robot_state_publisher">
     <remap from="joint_states" to="/robot/joint_states"/>
@@ -40,6 +40,17 @@
         pkg="jsk_interactive_marker" type="marker_6dof">
     <rosparam command="load" file="$(find jsk_2015_05_baxter_apc)/config/kiva_pod_interactive_marker.yaml" />
   </node>
+
+
+  <node name="desktop_bg_publisher"
+        pkg="jsk_perception" type="image_publisher.py">
+    <rosparam subst_value="true">
+      file_name: $(find jsk_2015_05_baxter_apc)/../images/desktop_bg_black.png
+    </rosparam>
+  </node>
+  <node name="team_k_desktop_xdisplay"
+        pkg="jsk_baxter_startup" type="xdisplay_image_topic.py"
+        args="/desktop_bg_publisher/output" />
 
 
 </launch>
