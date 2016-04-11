@@ -1,0 +1,2 @@
+std_msgs/String label
+geometry_msgs/PoseStamped qrcode_pose_stamp
