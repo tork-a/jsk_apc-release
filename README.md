@@ -1,14 +1,21 @@
 jsk\_apc
 =======
 
+<img src="images/icon_white.png" align="right" width="192px" />
+
 [![](https://travis-ci.org/start-jsk/jsk_apc.svg)](https://travis-ci.org/start-jsk/jsk_apc)
 [![Gitter](https://badges.gitter.im/start-jsk/jsk_apc.svg)](https://gitter.im/start-jsk/jsk_apc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Documentation Status](https://readthedocs.org/projects/jsk-apc/badge/?version=latest)](http://jsk-apc.readthedocs.org/en/latest/?badge=latest)
+
+
+**jsk_apc** is a stack of ROS packages for [Amazon Picking Challenge](http://amazonpickingchallenge.org) mainly developed by JSK lab.  
+The documentation is available at [here](http://jsk-apc.readthedocs.org).
 
 
 Usage
 -----
 
-See [jsk_2015_05_baxter_apc](jsk_2015_05_baxter_apc#jsk_2015_05_baxter_apc).
+See [jsk_2015_05_baxter_apc](http://jsk-apc.readthedocs.org/en/latest/jsk_2015_05_baxter_apc/index.html).
 
 
 Install
@@ -78,12 +85,14 @@ Host baxter
   User ruser  # password: rethink
 ```
 
+**Setup Creative Camera**
 
-If you have problem...
-----------------------
+1. Install DepthSenseSDK. You need to login to download it. [Middleware -> Download](http://www.softkinetic.com/)
 
-* Run below to synchronize the time with robot. Time synchronization is crucial.:
+2. Install ROS package
 
 ```
-$ sudo ntpdate baxter.jsk.imi.i.u-tokyo.ac.jp
+git clone  https://github.com/ipa320/softkinetic
+cd softkinetic/softkinetic
+catkin bt -iv
 ```
