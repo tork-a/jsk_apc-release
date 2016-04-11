@@ -32,7 +32,7 @@ def get_sorted_work_order(json_file):
 def get_work_order_msg(json_file):
     work_order = get_sorted_work_order(json_file=json_file)
     msg = dict(left=WorkOrderArray(), right=WorkOrderArray())
-    abondon_objects = [
+    abandon_objects = [
         'genuine_joe_plastic_stir_sticks',
         'cheezit_big_original',
         'rolodex_jumbo_pencil_cup',
@@ -40,7 +40,7 @@ def get_work_order_msg(json_file):
         'oreo_mega_stuf',
     ]
     for bin_, target_object in work_order:
-        if target_object in abondon_objects:
+        if target_object in abandon_objects:
             continue
         if bin_ in 'abdegj':
             msg['left'].array.append(WorkOrder(bin=bin_, object=target_object))
@@ -57,10 +57,10 @@ def main():
 
     msg = get_work_order_msg(json_file)
 
-    pub_left = rospy.Publisher('/work_order/left_hand',
+    pub_left = rospy.Publisher('~left_hand',
                                WorkOrderArray,
                                queue_size=1)
-    pub_right = rospy.Publisher('/work_order/right_hand',
+    pub_right = rospy.Publisher('~right_hand',
                                 WorkOrderArray,
                                 queue_size=1)
     rate = rospy.Rate(rospy.get_param('rate', 1))
