@@ -1,0 +1,92 @@
+<launch>
+
+  <arg name="INPUT_IMAGE" />
+  <arg name="INPUT_DEPTH" />
+  <arg name="INPUT_CLOUD" />
+  <arg name="MANAGER" />
+
+
+  <!-- bin clipper -->
+  <node name="bin_gtol_clipper"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/AttentionClipper $(arg MANAGER)">
+    <remap from="~input/points" to="$(arg INPUT_CLOUD)" />
+    <rosparam>
+      use_multiple_attention: true
+      initial_pos_list: [[-0.27, 0.29, -0.41], [-0.24, -0.01, -0.41], [-0.24, -0.32, -0.41], [-0.27, 0.29, -0.15], [-0.24, -0.01, -0.15], [-0.24, -0.32, -0.15]]
+      initial_rot_list: [[0, 0, 0], [0, 0, 0], [0, 0, 0.0], [0, 0, 0], [0, 0, 0], [0, 0, 0.00]]
+      dimensions: [[0.38, 0.23, 0.20],[0.38, 0.27, 0.20],[0.38, 0.23, 0.20], [0.38, 0.23, 0.18],[0.38, 0.27, 0.18],[0.38, 0.23, 0.18]]
+      frame_id_list: [kiva_pod_base, kiva_pod_base, kiva_pod_base, kiva_pod_base, kiva_pod_base, kiva_pod_base]
+      prefixes: [bin_j, bin_k, bin_l, bin_g, bin_h, bin_i]
+    </rosparam>
+  </node>
+
+
+  <!-- object segmentation -->
+  <include file="$(find jsk_2015_05_baxter_apc)/launch/include/segmentation_each_object_in_bin.launch">
+    <arg name="BIN_NAME" value="g" />
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)" />
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="INPUT_INDICES" value="/bin_gtol_clipper/bin_g/point_indices" />
+    <arg name="MANAGER" value="$(arg MANAGER)" />
+  </include>
+  <include file="$(find jsk_2015_05_baxter_apc)/launch/include/segmentation_each_object_in_bin.launch">
+    <arg name="BIN_NAME" value="h" />
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)" />
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="INPUT_INDICES" value="/bin_gtol_clipper/bin_h/point_indices" />
+    <arg name="MANAGER" value="$(arg MANAGER)" />
+  </include>
+  <include file="$(find jsk_2015_05_baxter_apc)/launch/include/segmentation_each_object_in_bin.launch">
+    <arg name="BIN_NAME" value="i" />
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)" />
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="INPUT_INDICES" value="/bin_gtol_clipper/bin_i/point_indices" />
+    <arg name="MANAGER" value="$(arg MANAGER)" />
+  </include>
+  <include file="$(find jsk_2015_05_baxter_apc)/launch/include/segmentation_each_object_in_bin.launch">
+    <arg name="BIN_NAME" value="j" />
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)" />
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="INPUT_INDICES" value="/bin_gtol_clipper/bin_j/point_indices" />
+    <arg name="MANAGER" value="$(arg MANAGER)" />
+  </include>
+  <include file="$(find jsk_2015_05_baxter_apc)/launch/include/segmentation_each_object_in_bin.launch">
+    <arg name="BIN_NAME" value="k" />
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)" />
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="INPUT_INDICES" value="/bin_gtol_clipper/bin_k/point_indices" />
+    <arg name="MANAGER" value="$(arg MANAGER)" />
+  </include>
+  <include file="$(find jsk_2015_05_baxter_apc)/launch/include/segmentation_each_object_in_bin.launch">
+    <arg name="BIN_NAME" value="l" />
+    <arg name="INPUT_DEPTH" value="$(arg INPUT_DEPTH)" />
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="INPUT_INDICES" value="/bin_gtol_clipper/bin_l/point_indices" />
+    <arg name="MANAGER" value="$(arg MANAGER)" />
+  </include>
+
+
+  <node name="bin_gtol_add_cpi"
+        pkg="jsk_recognition_utils" type="add_cluster_indices.py">
+    <rosparam>
+      topics:
+        - bin_g_euclid_clustering/output
+        - bin_h_euclid_clustering/output
+        - bin_i_euclid_clustering/output
+        - bin_j_euclid_clustering/output
+        - bin_k_euclid_clustering/output
+        - bin_l_euclid_clustering/output
+    </rosparam>
+  </node>
+  <node name="bin_gtol_img_cpi_decomposer"
+        pkg="jsk_perception" type="image_cluster_indices_decomposer.py">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input/cluster_indices" to="bin_gtol_add_cpi/output" />
+    <rosparam>
+      queue_size: 300
+    </rosparam>
+  </node>
+
+
+</launch>
