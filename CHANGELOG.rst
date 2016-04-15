@@ -2,6 +2,9 @@
 Changelog for package jsk_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.4 (2016-04-15)
+------------------
+
 0.2.3 (2016-04-11)
 ------------------
 * Add packages to metapackage's run_depend
