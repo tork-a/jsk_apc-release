@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_apc2015_common</name>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
   <description>Common stacks for Amazon Picking Challenge 2015</description>
 
   <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
@@ -13,6 +13,8 @@
   <!-- list dependencies in alphabetical order -->
   <run_depend>gazebo_ros</run_depend>
   <run_depend>jsk_demo_common</run_depend>
+
+  <test_depend>roslint</test_depend>
 
   <export>
     <gazebo_ros gazebo_model_path="${prefix}/models" />
