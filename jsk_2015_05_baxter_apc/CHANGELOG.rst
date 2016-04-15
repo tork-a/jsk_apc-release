@@ -2,6 +2,12 @@
 Changelog for package jsk_2015_05_baxter_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.2.4 (2016-04-15)
+------------------
+* Add visualization tool to visualize ik to bin
+* Update rosinstall
+* Contributors: Kentaro Wada
+
 0.2.3 (2016-04-11)
 ------------------
 * Upgrade baxter SDK to 1.2.0
