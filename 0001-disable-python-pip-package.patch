@@ -1,4 +1,4 @@
-From a08d5d26a35b4f45d590f64b495527b050fc0962 Mon Sep 17 00:00:00 2001
+From 700056986f1c5b3af0bbfe612c6719480ada126f Mon Sep 17 00:00:00 2001
 From: Kei Okada <k-okada@jsk.t.u-tokyo.ac.jp>
 Date: Tue, 8 Mar 2016 19:21:06 +0900
 Subject: [PATCH] disable python pip package
@@ -8,11 +8,11 @@ Subject: [PATCH] disable python pip package
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/package.xml b/package.xml
-index c8ca913..cf49e4e 100644
+index 913c833..09c6db1 100644
 --- a/package.xml
 +++ b/package.xml
-@@ -29,13 +29,13 @@
-   <run_depend>jsk_recognition_msgs</run_depend>
+@@ -37,13 +37,13 @@
+   <run_depend>jsk_rqt_plugins</run_depend>
    <run_depend>message_runtime</run_depend>
    <run_depend>posedetection_msgs</run_depend>
 -  <run_depend>python-gdown</run_depend>
@@ -25,9 +25,9 @@ index c8ca913..cf49e4e 100644
    <run_depend>python-sklearn</run_depend>
 -  <run_depend>python-termcolor</run_depend>
 +  <!-- <run_depend>python-termcolor</run_depend> -->
+   <run_depend>roseus</run_depend>
    <run_depend>rospy</run_depend>
    <run_depend>rosserial_arduino</run_depend>
-   <run_depend>rosserial_client</run_depend>
 -- 
 1.9.1
 
