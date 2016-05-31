@@ -35,6 +35,8 @@ CONFIGURE_XML = '''<?xml version='1.0' encoding='UTF-8'?>
        ROS_PARALLEL_TEST_JOBS = %(ROS_PARALLEL_TEST_JOBS)s&lt;br&gt;
        CATKIN_PARALLEL_TEST_JOBS = %(CATKIN_PARALLEL_TEST_JOBS)s&lt;br&gt;
        BUILDING_PKG = %(BUILD_PKGS)s&lt;br&gt;
+       ROS_REPOSITORY_PATH = %(ROS_REPOSITORY_PATH)s&lt;br&gt;
+       DOCKER_RUN_OPTION = %(DOCKER_RUN_OPTION)s&lt;br&gt;
   </description>
   <keepDependencies>false</keepDependencies>
   <properties>
@@ -102,10 +104,39 @@ fi
 git submodule init
 git submodule update
 
-# sudo docker rm -f `sudo docker ps --no-trunc -a -q` || echo "ok"
-sudo docker rmi $(sudo docker images | awk '/^&lt;none&gt;/ { print $3 }') || echo "oK"
+# remove containers created/exited more than 48 hours ago
+for container in `sudo docker ps -a | egrep '^.*days ago' | awk '{print $1}'`; do
+     sudo docker rm $container || echo ok
+done
 
-sudo docker run --rm -t --name %(DOCKER_CONTAINER_NAME)s -e ROS_DISTRO='%(ROS_DISTRO)s' -e ROSWS='%(ROSWS)s' -e BUILDER='%(BUILDER)s' -e USE_DEB='%(USE_DEB)s' -e TRAVIS_REPO_SLUG='%(TRAVIS_REPO_SLUG)s' -e EXTRA_DEB='%(EXTRA_DEB)s' -e TARGET_PKGS='%(TARGET_PKGS)s' -e BEFORE_SCRIPT='%(BEFORE_SCRIPT)s' -e TEST_PKGS='%(TEST_PKGS)s' -e NOT_TEST_INSTALL='%(NOT_TEST_INSTALL)s' -e ROS_PARALLEL_JOBS='%(ROS_PARALLEL_JOBS)s' -e CATKIN_PARALLEL_JOBS='%(CATKIN_PARALLEL_JOBS)s' -e ROS_PARALLEL_TEST_JOBS='%(ROS_PARALLEL_TEST_JOBS)s' -e CATKIN_PARALLEL_TEST_JOBS='%(CATKIN_PARALLEL_TEST_JOBS)s' -e BUILD_PKGS='%(BUILD_PKGS)s'  -e HOME=/workspace -v $WORKSPACE/${BUILD_TAG}:/workspace -v /export/data1/ccache:/workspace/.ccache -v /export/data1/pip-cache:/workspace/.cache/pip -v /export/data1/ros_test_data:/workspace/.ros/test_data -w /workspace ros-ubuntu:%(LSB_RELEASE)s /bin/bash -c "$(cat &lt;&lt;EOL
+sudo docker stop %(DOCKER_CONTAINER_NAME)s || echo "docker stop %(DOCKER_CONTAINER_NAME)s ends with $?"
+sudo docker rm %(DOCKER_CONTAINER_NAME)s || echo  "docker rm %(DOCKER_CONTAINER_NAME)s ends with $?"
+sudo docker run %(DOCKER_RUN_OPTION)s -t \\
+    --name %(DOCKER_CONTAINER_NAME)s \\
+    -e ROS_DISTRO='%(ROS_DISTRO)s' \\
+    -e ROSWS='%(ROSWS)s' \\
+    -e BUILDER='%(BUILDER)s' \\
+    -e USE_DEB='%(USE_DEB)s' \\
+    -e TRAVIS_REPO_SLUG='%(TRAVIS_REPO_SLUG)s' \\
+    -e EXTRA_DEB='%(EXTRA_DEB)s' \\
+    -e TARGET_PKGS='%(TARGET_PKGS)s' \\
+    -e BEFORE_SCRIPT='%(BEFORE_SCRIPT)s' \\
+    -e TEST_PKGS='%(TEST_PKGS)s' \\
+    -e NOT_TEST_INSTALL='%(NOT_TEST_INSTALL)s' \\
+    -e ROS_PARALLEL_JOBS='%(ROS_PARALLEL_JOBS)s' \\
+    -e CATKIN_PARALLEL_JOBS='%(CATKIN_PARALLEL_JOBS)s' \\
+    -e ROS_PARALLEL_TEST_JOBS='%(ROS_PARALLEL_TEST_JOBS)s' \\
+    -e CATKIN_PARALLEL_TEST_JOBS='%(CATKIN_PARALLEL_TEST_JOBS)s' \\
+    -e BUILD_PKGS='%(BUILD_PKGS)s' \\
+    -e ROS_REPOSITORY_PATH='%(ROS_REPOSITORY_PATH)s'  \\
+    -e DOCKER_RUN_OPTION='%(DOCKER_RUN_OPTION)s'  \\
+    -e HOME=/workspace \\
+    -v $WORKSPACE/${BUILD_TAG}:/workspace \\
+    -v /export/data1/ccache:/workspace/.ccache \\
+    -v /export/data1/pip-cache:/workspace/.cache/pip \\
+    -v /export/data1/ros_test_data:/workspace/.ros/test_data \\
+    -w /workspace ros-ubuntu:%(LSB_RELEASE)s /bin/bash \\
+    -c "$(cat &lt;&lt;EOL
 
 cd %(TRAVIS_REPO_SLUG)s
 set -x
@@ -218,29 +249,31 @@ def wait_for_building(name, number):
         loop += 1
 
 ##
-TRAVIS_BRANCH   = env.get('TRAVIS_BRANCH')
-TRAVIS_COMMIT   = env.get('TRAVIS_COMMIT') or 'HEAD'
-TRAVIS_PULL_REQUEST     = env.get('TRAVIS_PULL_REQUEST') or 'false'
-TRAVIS_REPO_SLUG        = env.get('TRAVIS_REPO_SLUG') or 'jsk-ros-pkg/jsk_travis'
-TRAVIS_BUILD_ID         = env.get('TRAVIS_BUILD_ID')
-TRAVIS_BUILD_NUMBER     = env.get('TRAVIS_BUILD_NUMBER')
-TRAVIS_JOB_ID           = env.get('TRAVIS_JOB_ID')
-TRAVIS_JOB_NUMBER       = env.get('TRAVIS_JOB_NUMBER')
-ROS_DISTRO      = env.get('ROS_DISTRO') or 'indigo'
-ROSWS           = env.get('ROSWS') or 'wstool'
-BUILDER         = env.get('BUILDER') or 'catkin'
-USE_DEB         = env.get('USE_DEB') or 'true'
-EXTRA_DEB       = env.get('EXTRA_DEB') or ''
-TEST_PKGS       = env.get('TEST_PKGS') or ''
-TARGET_PKGS     = env.get('TARGET_PKGS') or ''
-BEFORE_SCRIPT   = env.get('BEFORE_SCRIPT') or ''
-NOT_TEST_INSTALL        = env.get('NOT_TEST_INSTALL') or ''
-ROS_PARALLEL_JOBS       = env.get('ROS_PARALLEL_JOBS') or ''
-CATKIN_PARALLEL_JOBS    = env.get('CATKIN_PARALLEL_JOBS') or ''
-ROS_PARALLEL_TEST_JOBS  = env.get('ROS_PARALLEL_TEST_JOBS') or ''
-CATKIN_PARALLEL_TEST_JOBS = env.get('CATKIN_PARALLEL_TEST_JOBS') or ''
-BUILD_PKGS       = env.get('BUILD_PKGS') or ''
-DOCKER_CONTAINER_NAME = '_'.join([TRAVIS_REPO_SLUG.replace('/','.'), TRAVIS_JOB_ID])
+TRAVIS_BRANCH = env.get('TRAVIS_BRANCH')
+TRAVIS_COMMIT = env.get('TRAVIS_COMMIT', 'HEAD')
+TRAVIS_PULL_REQUEST = env.get('TRAVIS_PULL_REQUEST', 'false')
+TRAVIS_REPO_SLUG = env.get('TRAVIS_REPO_SLUG', 'jsk-ros-pkg/jsk_travis')
+TRAVIS_BUILD_ID = env.get('TRAVIS_BUILD_ID')
+TRAVIS_BUILD_NUMBER = env.get('TRAVIS_BUILD_NUMBER')
+TRAVIS_JOB_ID = env.get('TRAVIS_JOB_ID')
+TRAVIS_JOB_NUMBER = env.get('TRAVIS_JOB_NUMBER')
+ROS_DISTRO = env.get('ROS_DISTRO', 'indigo')
+ROSWS = env.get('ROSWS', 'wstool')
+BUILDER = env.get('BUILDER', 'catkin')
+USE_DEB = env.get('USE_DEB', 'true')
+EXTRA_DEB = env.get('EXTRA_DEB', '')
+TEST_PKGS = env.get('TEST_PKGS', '')
+TARGET_PKGS = env.get('TARGET_PKGS', '')
+BEFORE_SCRIPT = env.get('BEFORE_SCRIPT', '')
+NOT_TEST_INSTALL = env.get('NOT_TEST_INSTALL', '')
+ROS_PARALLEL_JOBS = env.get('ROS_PARALLEL_JOBS', '')
+CATKIN_PARALLEL_JOBS = env.get('CATKIN_PARALLEL_JOBS', '')
+ROS_PARALLEL_TEST_JOBS = env.get('ROS_PARALLEL_TEST_JOBS', '')
+CATKIN_PARALLEL_TEST_JOBS = env.get('CATKIN_PARALLEL_TEST_JOBS', '')
+BUILD_PKGS = env.get('BUILD_PKGS', '')
+ROS_REPOSITORY_PATH = env.get('ROS_REPOSITORY_PATH', '')
+DOCKER_CONTAINER_NAME = '_'.join([TRAVIS_REPO_SLUG.replace('/','.'), TRAVIS_JOB_NUMBER])
+DOCKER_RUN_OPTION = env.get('DOCKER_RUN_OPTION', '--rm')
 
 print('''
 TRAVIS_BRANCH        = %(TRAVIS_BRANCH)s
@@ -266,7 +299,9 @@ CATKIN_PARALLEL_JOBS    = %(CATKIN_PARALLEL_JOBS)s
 ROS_PARALLEL_TEST_JOBS  = %(ROS_PARALLEL_TEST_JOBS)s
 CATKIN_PARALLEL_TEST_JOBS = %(CATKIN_PARALLEL_TEST_JOBS)s
 BUILD_PKGS       = %(BUILD_PKGS)s
+ROS_REPOSITORY_PATH = %(ROS_REPOSITORY_PATH)s
 DOCKER_CONTAINER_NAME   = %(DOCKER_CONTAINER_NAME)s
+DOCKER_RUN_OPTION = %(DOCKER_RUN_OPTION)s
 ''' % locals())
 
 if env.get('ROS_DISTRO') == 'hydro':
