@@ -134,7 +134,6 @@ if [ "$USE_DEB" == false ]; then
         $ROSWS merge file://$CI_SOURCE_PATH/.travis.rosinstall.$ROS_DISTRO
     fi
     $ROSWS update
-    $ROSWS set $REPOSITORY_NAME http://github.com/$TRAVIS_REPO_SLUG --git -y
 fi
 ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
 if [ "$USE_DEB" == source -a -e $REPOSITORY_NAME/setup_upstream.sh ]; then $ROSWS init .; $REPOSITORY_NAME/setup_upstream.sh -w ~/ros/ws_$REPOSITORY_NAME ; $ROSWS update; fi
@@ -185,7 +184,11 @@ source /opt/ros/$ROS_DISTRO/setup.bash > /tmp/$$.x 2>&1; grep export\ [^_] /tmp/
 # for catkin
 if [ "${TARGET_PKGS// }" == "" ]; then export TARGET_PKGS=`catkin_topological_order ${CI_SOURCE_PATH} --only-names`; fi
 if [ "${TEST_PKGS// }" == "" ]; then export TEST_PKGS=$( [ "${BUILD_PKGS// }" == "" ] && echo "$TARGET_PKGS" || echo "$BUILD_PKGS"); fi
-if [ "$BUILDER" == catkin ]; then catkin build -i -v --summarize  --limit-status-rate 0.001 $BUILD_PKGS $CATKIN_PARALLEL_JOBS --make-args $ROS_PARALLEL_JOBS            ; fi
+if [ "$BUILDER" == catkin ]; then
+  set -o pipefail  # this is necessary to pipe fail status on grepping
+  catkin build -i --summarize  --no-status $BUILD_PKGS $CATKIN_PARALLEL_JOBS --make-args $ROS_PARALLEL_JOBS | grep -v -e Symlinking -e Linked
+  set +o pipefail
+fi
 
 travis_time_end
 travis_time_start catkin_run_tests
@@ -199,7 +202,9 @@ fi
 
 if [ "$BUILDER" == catkin ]; then
     source devel/setup.bash > /tmp/$$.x 2>&1; grep export\ [^_] /tmp/$$.x ; rospack profile # force to update ROS_PACKAGE_PATH for rostest
-    catkin run_tests -iv --no-deps --limit-status-rate 0.001 $TEST_PKGS $CATKIN_PARALLEL_TEST_JOBS --make-args $ROS_PARALLEL_TEST_JOBS --
+    set -o pipefail  # this is necessary to pipe fail status on grepping
+    catkin run_tests -i --no-deps --no-status $TEST_PKGS $CATKIN_PARALLEL_TEST_JOBS --make-args $ROS_PARALLEL_TEST_JOBS -- | grep -v -e Symlinking -e Linked -e :[^\s]*install[^\s]*\]
+    set +o pipefail
     catkin_test_results build || error
 fi
 
@@ -210,12 +215,14 @@ if [ "$NOT_TEST_INSTALL" != "true" ]; then
     travis_time_start catkin_install_build
 
     if [ "$BUILDER" == catkin ]; then
-        catkin clean -a
+        catkin clean --yes || catkin clean -a # 0.3.1 uses -a, 0.4.0 uses --yes
         catkin config --install
-        catkin build -i -v --summarize --limit-status-rate 0.001 $BUILD_PKGS $CATKIN_PARALLEL_JOBS --make-args $ROS_PARALLEL_JOBS
+        set -o pipefail  # this is necessary to pipe fail status on grepping
+        catkin build --summarize --no-status $BUILD_PKGS $CATKIN_PARALLEL_JOBS --make-args $ROS_PARALLEL_JOBS | grep -v -e Symlinking -e Linked -e :[^\s]*install[^\s]*\]
+        set +o pipefail
         source install/setup.bash > /tmp/$$.x 2>&1; grep export\ [^_] /tmp/$$.x
         rospack profile
-        rospack plugins --attrib=plugin nodelet
+        rospack plugins --attrib=plugin nodelet || echo "ok"
     fi
 
     travis_time_end
