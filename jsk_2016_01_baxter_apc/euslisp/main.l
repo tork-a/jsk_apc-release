@@ -9,6 +9,7 @@
 
 (defun apc-init (&optional (ctype :default-controller))
   (jsk_2016_01_baxter_apc::baxter-init :ctype ctype)
+  (send *ri* :gripper-servo-on)
   (send *ri* :angle-vector (send *baxter* :fold-pose-back))
   (send *ri* :wait-interpolation)
   (objects (list *baxter*))
@@ -53,14 +54,21 @@
               (setq target-n-tried 0)
               (setq target-bin (str2symbol (send order :bin)))
               (setq target-obj (send order :object))
-              (ros::set-param (format nil "~a_hand/target_bin" (send *ri* :arm-symbol2str arm)) (symbol2str target-bin))
-              ;; logging
-              (ros::ros-info "[main] state: ~a" state)
-              (ros::ros-info "[main] arm: ~a" arm)
-              (ros::ros-info "[main] target-bin: ~a" target-bin)
-              (ros::ros-info "[main] target-obj: ~a" target-obj)
-              (setq state :pick_object)
-              (ros::set-param (format nil "~a_hand/state" (send *ri* :arm-symbol2str arm)) (symbol2str state))
+              (if (send *ri* :check-bin-exist target-bin)
+                (progn
+                  (ros::set-param (format nil "~a_hand/target_bin" (send *ri* :arm-symbol2str arm)) (symbol2str target-bin))
+                  ;; logging
+                  (ros::ros-info "[main] state: ~a" state)
+                  (ros::ros-info "[main] arm: ~a" arm)
+                  (ros::ros-info "[main] target-bin: ~a" target-bin)
+                  (ros::ros-info "[main] target-obj: ~a" target-obj)
+                  (setq state :pick_object)
+                  (ros::set-param (format nil "~a_hand/state" (send *ri* :arm-symbol2str arm)) (symbol2str state)))
+                (progn
+                  (ros::ros-info "[main] could not find bin box: ~a" target-bin)
+                  (setq state :set_target)
+                  (ros::set-param (format nil "~a_hand/state" (send *ri* :arm-symbol2str arm)) (symbol2str state)))
+                )
               )
             )
           )
@@ -83,15 +91,17 @@
             (progn
               ;; run motion
               (ros::ros-info "[main] Recognizing objects in bin" target-bin)
-              (send *ri* :recognize-objects-in-bin target-bin :stamp (ros::time-now))
-              (send *ri* :move-arm-body->bin arm target-bin)
+              (send *ri* :move-arm-body->bin-overlook-pose arm target-bin)
               (send *ri* :wait-interpolation)
-              (ros::ros-info "detected_object_index: ~A" (send *ri* :detect-target-object-in-bin target-obj target-bin))
+              (unix::sleep 2)
+              (ros::ros-info "[main] Segmentating objects in bin" target-bin)
+              (send *ri* :recognize-objects-segmentation-in-bin arm target-bin :stamp (ros::time-now))
+              ;; (ros::ros-info "detected_object_index: ~A" (send *ri* :detect-target-object-in-bin target-obj target-bin))
               (setq graspingp
                     (send *ri* :pick-object arm target-bin
                           :n-trial 1
                           :n-trial-same-pos 1
-                          :object-index (send *ri* :detect-target-object-in-bin target-obj target-bin)
+                          ;; :object-index (send *ri* :detect-target-object-in-bin target-obj target-bin)
                           :do-stop-grasp nil
                           )
                     )
@@ -152,25 +162,29 @@
           (ros::ros-info "[main] ~a, ~a" arm state)
           (send *ri* :angle-vector-sequence (reverse avs-picked->view-pose) :fast nil 0 :scale 5.0)
           (send *ri* :wait-interpolation)
-          (send *ri* :angle-vector-sequence
-                (list
-                  (send *baxter* :avoid-shelf-pose arm target-bin)
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(-300 0 50))
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(-100 0 50))
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(0 0 50))
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(100 0 50))
+          (setq avs-picked->return-bin
+                (if (eq arm :rarm)
+                  (cons (send *baxter* :avoid-shelf-pose arm target-bin)
+                        (mapcar
+                          #'(lambda (x)
+                              (send *ri* :ik->bin-entrance arm target-bin :offset (float-vector x 0 -20)))
+                          '(-200 -150 -100 -50 0 150))
+                        )
+                  (list
+                    (send *baxter* :avoid-shelf-pose arm target-bin)
+                    (send *ri* :ik->bin-entrance arm target-bin :offset #f(-300 0 50))
+                    (send *ri* :ik->bin-entrance arm target-bin :offset #f(-100 0 50))
+                    (send *ri* :ik->bin-entrance arm target-bin :offset #f(0 0 50))
+                    (send *ri* :ik->bin-entrance arm target-bin :offset #f(200 0 50)))
                   )
-                :fast nil 0 :scale 5.0)
+                )
+          (send *ri* :angle-vector-sequence avs-picked->return-bin :fast nil 0 :scale 5.0)
           (send *ri* :wait-interpolation)
           (send *ri* :stop-grasp) ;; release object
           (send *ri* :spin-off-by-wrist arm :times 20)
           (send *ri* :wait-interpolation)
           (send *ri* :angle-vector-sequence
-                (list
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(0 0 50))
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(-100 0 50))
-                  (send *ri* :ik->bin-entrance arm target-bin :offset #f(-300 0 50))
-                  )
+                (reverse avs-picked->return-bin)
                 :fast nil 0 :scale 5.0)
           (send *ri* :wait-interpolation)
           (send *ri* :angle-vector (send *baxter* :avoid-shelf-pose arm target-bin))

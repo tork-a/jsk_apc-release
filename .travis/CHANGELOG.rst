@@ -2,6 +2,70 @@
 Changelog for package jsk_travis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.6 (2016-05-01)
+------------------
+* Fix `#253 <https://github.com/jsk-ros-pkg/jsk_travis/issues/253>`_ `#254 <https://github.com/jsk-ros-pkg/jsk_travis/issues/254>`_: Pipe failed return status on grepping (`#255 <https://github.com/jsk-ros-pkg/jsk_travis/issues/255>`_)
+  * Fix `#254 <https://github.com/jsk-ros-pkg/jsk_travis/issues/254>`_: Pipe failed return status on grepping
+  Closes `#254 <https://github.com/jsk-ros-pkg/jsk_travis/issues/254>`_
+  * catkin 0.3.1 fails without tailing -- (`#3 <https://github.com/jsk-ros-pkg/jsk_travis/issues/3>`_)
+* Stop setting testing repository in wstool workspace
+* Refactoring with env.get('key', 'default_value') in 'travis_jenkins.py'
+* Contributors: Kentaro Wada
+
+0.4.5 (2016-04-24)
+------------------
+* support DOCKER_RUN_OPTION and set default to --rm
+* Refactoring docker run in 'travis_jenkins.py'
+* Contributors: Kei Okada, Kentaro Wada
+
+0.4.4 (2016-04-23)
+------------------
+* on some environment, nedoelet is not installed
+* Contributors: Kei Okada
+
+0.4.3 (2016-04-23)
+------------------
+* do not print out :install] message
+* Contributors: Kei Okada
+
+0.4.2 (2016-04-21)
+------------------
+* now hydro/deb uses 0.3.1
+* 0.3.1 for hydro
+* Contributors: Kei Okada
+
+0.4.1 (2016-04-20)
+------------------
+* travis_jenkins.py: pass ROS_REPOSITORY_PATH
+* remove Symlinking. and Linkid.. from output
+* rosdep-install.sh : remove debug code
+* quiet intall catkin-tools
+* travis.sh : catkin run_tests -iv -> catkin run_tests -i to reduce output message
+* remove -i option for install configuraiton to supress Installing... output
+* rosdep-install.sh : use -q for rosdep install
+* use --no-status: if there are code that needs to compile more than 10 sec, this would becoume problem
+* Contributors: Kei Okada
+
+0.4.0 (2016-04-19)
+------------------
+* rosdep-install.sh: try 3 times
+* order of --from-paths was not correct
+
+* Fix for catkin_tools 0.4.x
+
+  * travis.sh: catkin build -i -v is too verbose, use -v @wkentaro
+  * use 0.1 (wait at most 10 sec) for limit-status-rate, see https://github.com/catkin/catkin_tools/issues/337 for problem
+  * setup.sh : catkin clean -a is no longer supported
+  * travis.sh : could not install catkin-tools from apt, use pip instaed
+
+* Contributors: Kei Okada
+
+0.3.1 (2016-04-11)
+------------------
+* stop canceled jobs before re-run docker
+* keep containers for a while
+* Contributors: Furushchev
+
 0.3.0 (2016-03-24)
 ------------------
 * add --force-yes to apt-get install

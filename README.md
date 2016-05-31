@@ -3,13 +3,24 @@ jsk\_apc
 
 <img src="images/icon_white.png" align="right" width="192px" />
 
+[![GitHub version](https://badge.fury.io/gh/start-jsk%2Fjsk_apc.svg)](https://badge.fury.io/gh/start-jsk%2Fjsk_apc)
 [![](https://travis-ci.org/start-jsk/jsk_apc.svg)](https://travis-ci.org/start-jsk/jsk_apc)
 [![Gitter](https://badges.gitter.im/start-jsk/jsk_apc.svg)](https://gitter.im/start-jsk/jsk_apc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Slack](https://img.shields.io/badge/slack-%23jsk__apc-e100e1.svg)](https://jsk-robotics.slack.com/messages/jsk_apc/)
 [![Documentation Status](https://readthedocs.org/projects/jsk-apc/badge/?version=latest)](http://jsk-apc.readthedocs.org/en/latest/?badge=latest)
 
 
 **jsk_apc** is a stack of ROS packages for [Amazon Picking Challenge](http://amazonpickingchallenge.org) mainly developed by JSK lab.  
 The documentation is available at [here](http://jsk-apc.readthedocs.org).
+
+
+Build Status
+------------
+
+| Package | Indigo (Trusty) |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| jsk_apc (32-bit) | [![Build Status](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/) |
+| jsk_apc (64-bit) | [![Build Status](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/) |
 
 
 Usage
@@ -85,14 +96,13 @@ Host baxter
   User ruser  # password: rethink
 ```
 
-**Setup Creative Camera**
+**Setup Softkinetic Camera**
 
-1. Install DepthSenseSDK. You need to login to download it. [Middleware -> Download](http://www.softkinetic.com/)
+See [here](http://jsk-recognition.readthedocs.org/en/latest/install_softkinetic_camera.html) for almost all install process,
+but for installing ROS package please do like below:
 
-2. Install ROS package
-
-```
-git clone  https://github.com/ipa320/softkinetic
-cd softkinetic/softkinetic
+```bash
+git clone https://github.com/knorth55/softkinetic.git -b jsk_apc
+cd softkinetic/softkinetic_camera
 catkin bt -iv
 ```
