@@ -155,15 +155,15 @@ target_link_libraries(gazebo_ros_vacuum_gripper ${GAZEBO_LIBRARIES} ${catkin_LIB
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.l
   COMMAND rosrun euscollada collada2eus baxter.dae baxter.yaml baxter.l
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
-  DEPENDS robots/baxter.dae robots/baxter.yaml)
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.dae ${PROJECT_SOURCE_DIR}/robots/baxter.yaml)
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.dae
   COMMAND rosrun collada_urdf urdf_to_collada baxter.urdf baxter.dae
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
-  DEPENDS robots/baxter.urdf)
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.urdf)
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.urdf
   COMMAND rosrun xacro xacro baxter.xacro > baxter.urdf
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
-  DEPENDS robots/baxter.xacro)
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.xacro)
 # get collada-dom version
 find_package(PkgConfig)
 pkg_check_modules(COLLADA collada-dom>=2.4.4 )
@@ -237,13 +237,9 @@ install(TARGETS
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
-# TODO(wkentaro): add test for recognition & motion
-# if(CATKIN_ENABLE_TESTING)
-#   find_package(rostest REQUIRED)
-#   # install test data by a script
-#   add_custom_target(install_test_data COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_test_data.py)
-#   if(TARGET tests)
-#     add_dependencies(tests install_test_data)
-#   endif()
-#   add_rostest(test/test_recognition_in_hand.test DEPENDENCIES install_test_data)
-# endif()
+if(CATKIN_ENABLE_TESTING)
+  find_package(jsk_tools REQUIRED)
+  if(${jsk_tools_VERSION} VERSION_GREATER 2.0.13)
+    jsk_tools_add_shell_test(COMMAND "roseus ${PROJECT_SOURCE_DIR}/euslisp/test/test-move-arm-to-bin.l")
+  endif()
+endif()
