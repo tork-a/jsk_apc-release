@@ -1,4 +1,4 @@
-From 136fd8cb5ea54d165dfb38bd50d85a14a19bcd00 Mon Sep 17 00:00:00 2001
+From 88f0209833bdebb2a149186c0f9c64bba65d2890 Mon Sep 17 00:00:00 2001
 From: Kei Okada <k-okada@jsk.t.u-tokyo.ac.jp>
 Date: Tue, 8 Mar 2016 19:21:06 +0900
 Subject: [PATCH] disable python pip package
