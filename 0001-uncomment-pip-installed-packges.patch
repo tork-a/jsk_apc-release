@@ -1,0 +1,25 @@
+From 471c9713e64ffaeca0de74118409d9bb03ac0fc6 Mon Sep 17 00:00:00 2001
+From: Kentaro Wada <www.kentaro.wada@gmail.com>
+Date: Wed, 1 Jun 2016 16:49:17 +0900
+Subject: [PATCH] uncomment pip installed packges
+
+---
+ package.xml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/package.xml b/package.xml
+index bb8510d..d40ef6a 100644
+--- a/package.xml
++++ b/package.xml
+@@ -41,7 +41,7 @@
+   <run_depend>std_msgs</run_depend>
+   <run_depend>jsk_data</run_depend>
+ 
+-  <test_depend>python-gdown</test_depend>
++  <!-- <test_depend>python-gdown</test_depend> -->
+   <test_depend>rostest</test_depend>
+   <test_depend>jsk_tools</test_depend>
+ </package>
+-- 
+1.9.1
+
