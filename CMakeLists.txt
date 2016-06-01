@@ -4,7 +4,13 @@ project(jsk_2016_01_baxter_apc)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roseus)
+find_package(catkin REQUIRED COMPONENTS
+    roseus
+    control_msgs
+    roscpp
+    std_msgs
+    baxter_core_msgs
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -98,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS roseus)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES jsk_apc2016_common
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS control_msgs roscpp std_msgs baxter_core_msgs
 #  DEPENDS system_lib
 )
 
@@ -108,7 +114,9 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include
+  ${catkin_INCLUDE_DIRS}
+)
 
 ## Declare a C++ library
 # add_library(jsk_apc2016_common
@@ -120,17 +128,50 @@ catkin_package(
 ## either from message generation or dynamic reconfigure
 # add_dependencies(jsk_apc2016_common ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+## -------------------
+## baxter.l generation
+## -------------------
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.l
+  COMMAND rosrun euscollada collada2eus baxter.dae baxter.yaml baxter.l
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.dae ${PROJECT_SOURCE_DIR}/robots/baxter.yaml)
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.dae
+  COMMAND rosrun collada_urdf urdf_to_collada baxter.urdf baxter.dae
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.urdf)
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.urdf
+  COMMAND rosrun xacro xacro baxter.xacro > baxter.urdf
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.xacro
+          ${PROJECT_SOURCE_DIR}/robots/right_arm_camera.xacro
+          ${PROJECT_SOURCE_DIR}/robots/left_arm_camera.xacro
+          ${PROJECT_SOURCE_DIR}/robots/right_vacuum_gripper.xacro
+          ${PROJECT_SOURCE_DIR}/robots/left_vacuum_gripper.xacro
+          ${PROJECT_SOURCE_DIR}/robots/softkinetic_camera/senz3d.urdf.xacro)
+# get collada-dom version
+find_package(PkgConfig)
+pkg_check_modules(COLLADA collada-dom>=2.4.4)
+if(${COLLADA_FOUND})
+  add_custom_target(generate_baxter_lisp ALL DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.l)
+else()
+  pkg_check_modules(COLLADA collada-dom)
+  message(WARNING "urdf_to_collada requries collada-dom >= 2.4.4, installed version is ${COLLADA_VERSION}")
+endif()
+
 ## Declare a C++ executable
-# add_executable(jsk_apc2016_common_node src/jsk_apc2016_common_node.cpp)
+add_executable(gripper_joint_states_publisher src/gripper_joint_states_publisher.cpp)
+add_executable(gripper_trajectory_server src/gripper_trajectory_server.cpp)
+add_executable(enable_gripper src/enable_gripper.cpp)
 
 ## Add cmake target dependencies of the executable
-## same as for the library above
-# add_dependencies(jsk_apc2016_common_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(gripper_joint_states_publisher ${catkin_EXPORTED_TARGETS})
+add_dependencies(gripper_trajectory_server ${catkin_EXPORTED_TARGETS})
+add_dependencies(enable_gripper ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(jsk_apc2016_common_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(gripper_joint_states_publisher ${catkin_LIBRARIES})
+target_link_libraries(gripper_trajectory_server ${catkin_LIBRARIES})
+target_link_libraries(enable_gripper ${catkin_LIBRARIES})
 
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/worlds/pick_kiva.world
   DEPENDS ${PROJECT_SOURCE_DIR}/worlds/pick_kiva.world.erb
@@ -192,6 +233,27 @@ add_custom_target(compile_stow_kiva_world ALL
 # endif()
 
 ## Add folders to be run by python nosetests
-# if(CATKIN_ENABLE_TESTING)
-#   catkin_add_nosetests(src/jsk_apc2016_common/tests)
-# endif()
+if(CATKIN_ENABLE_TESTING)
+  find_package(roslint REQUIRED)
+  roslint_python(node_scripts)
+  roslint_add_test()
+  find_package(rostest REQUIRED)
+  add_rostest(test/work_order.test)
+  add_rostest(test/apply_bin_contents_hint.test)
+  add_custom_target(download_test_data COMMAND ${PROJECT_SOURCE_DIR}/scripts/download_test_data.py)
+  if(TARGET tests)
+    add_dependencies(tests download_test_data)
+  endif()
+  add_rostest(test/test_move_arm_to_bin.test)
+  add_rostest(test/test_ik_in_bin.test)
+  add_rostest(test/test_ik.test)
+  find_package(roslaunch REQUIRED)
+  roslaunch_add_file_check(launch/include/vacuum_gripper.launch)
+  find_package(jsk_tools REQUIRED)
+  file(GLOB_RECURSE _eus_files *.l)
+  foreach(_eus_file IN LISTS _eus_files)
+    if(${jsk_tools_VERSION} VERSION_GREATER 2.0.13)
+      jsk_tools_add_shell_test(COMMAND "rosrun jsk_2016_01_baxter_apc euslint ${_eus_file}")
+    endif()
+  endforeach()
+endif()
