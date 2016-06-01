@@ -7,10 +7,6 @@
   (when (not (boundp '*baxter*))
     (baxter-init)
     (send *baxter* :locate #f(0 0 950) :world))
-  ;; pod-lowres model
-  (when (not (boundp '*pod*))
-    (load "package://jsk_2016_01_baxter_apc/euslisp/pod-lowres.l")
-    (pod-init))
 
   (when (not (boundp '*tote*))
     (setq *tote* (body- (make-cube 400 500 300)
@@ -24,7 +20,7 @@
     (send *tote* :translate #f(0 0 0)))
   )
 (init)
-(objects (list *baxter* *pod* *tote* *target*))
+(objects (list *baxter* *tote* *target*))
 
 (defun rarm-movepos
   (robot endcoords axis)
@@ -38,7 +34,7 @@
   (setq *target* (make-cube 100 100 100))
   (send *target* :set-color :blue)
   (let ((x (+ 375 (random 250))) (y (- 175 (random 350))))
-	(send *target* :translate (float-vector x y -350)))
+    (send *target* :translate (float-vector x y -350)))
   (objects (list *baxter* *shelf* *tote* *target*)))
 
 (defun tote2shelf (x)
@@ -79,8 +75,8 @@
 
 (defun test ()
   (do ((i 2 (+ i 1))) ((> i 5))
-	(init-target)
-	(tote2shelf 0)
-	(init-target)
-	(tote2shelf 1)))
+    (init-target)
+    (tote2shelf 0)
+    (init-target)
+    (tote2shelf 1)))
 (ros::ros-info "(test) : start demo")
