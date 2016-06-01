@@ -18,7 +18,19 @@ PKG = 'jsk_apc2016_common'
 
 
 def get_object_data():
-    """Returns object data.
+    """Returns object data for APC2016.
+
+    Returns:
+        data (dict): objects data wrote in object_data.yaml file.
+    """
+    rp = rospkg.RosPack()
+    fname = osp.join(rp.get_path(PKG), 'data/object_data_2016.yaml')
+    data = yaml.load(open(fname))
+    return data
+
+
+def get_object_data_2015():
+    """Returns object data for APC2015.
 
     Returns:
         data (dict): objects data wrote in object_data.yaml file.
@@ -27,6 +39,37 @@ def get_object_data():
     fname = osp.join(rp.get_path(PKG), 'data/object_data.yaml')
     data = yaml.load(open(fname))
     return data
+
+
+def get_bin_contents(json_file):
+    """Return bin contents data from picking json.
+
+    Returns:
+        data (dict): bin contents data written in picking json file.
+    """
+    with open(json_file, 'r') as f:
+        bin_contents = json.load(f)['bin_contents']
+    dict_contents = {}
+    for bin_, objects in bin_contents.items():
+        bin_ = bin_.split('_')[1].lower()  # bin_A -> a
+        dict_contents[bin_] = objects
+    return dict_contents
+
+
+def get_work_order(json_file):
+    """Return work order data from picking json.
+
+    Returns:
+        data (dict): work order written in picking json file.
+    """
+    with open(json_file, 'r') as f:
+        data = json.load(f)['work_order']
+    dict_order = {}
+    for order in data:
+        bin_ = order['bin'].split('_')[1].lower()  # bin_A -> a
+        target_object = order['item']
+        dict_order[bin_] = target_object
+    return dict_order
 
 
 def visualize_stow_contents(work_order):
@@ -108,3 +151,28 @@ def visualize_stow_json(json_file):
     tote_img = cv2.resize(tote_img, (kiva_w, tote_h*kiva_w//tote_w))
     dest = np.concatenate((kiva_pod_img, tote_img), axis=0)
     return dest
+
+
+def visualize_pick_json(json_file):
+    """Visualize json file for Pick Task in APC2016
+
+    Args:
+        json_file (``str``): Path to the json file.
+
+    Returns:
+        kiva_pod_img (~numpy.ndarray):
+            visualized image of listed objects over the Kiva Pod image.
+    """
+    # load data from json
+    bin_contents, work_order = jsk_apc2015_common.load_json(json_file)
+    # set extra image paths that is added in APC2016
+    rp = rospkg.RosPack()
+    pkg_path = rp.get_path(PKG)
+    extra_img_paths = {}
+    for entry in get_object_data():
+        obj = entry['name']
+        extra_img_paths[obj] = osp.join(pkg_path, 'models', obj, 'image.jpg')
+    # generate visualized image
+    img = jsk_apc2015_common.visualize_bin_contents(
+        bin_contents, work_order, extra_img_paths)
+    return img
