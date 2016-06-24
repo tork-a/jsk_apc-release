@@ -2,8 +2,13 @@
 Changelog for package jsk_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.1 (2016-06-24)
+------------------
+* Update CHANGELOG.rst for 0.8.0
+* Contributors: Kentaro Wada
+
+0.8.0 (2016-05-31)
+------------------
 
 0.2.4 (2016-04-15)
 ------------------
