@@ -12,6 +12,7 @@
           remappings:
             - from: ~input/points
               to: $(arg INPUT_CLOUD)
+        <!--
         - name: extract_indices_left_hand
           type: jsk_pcl/ExtractIndices
           remappings:
@@ -40,18 +41,21 @@
           remappings:
           - from: ~input
             to: /extract_indices_right_hand/points_filtered
+        -->
         - name: pi_to_mask_left_hand
           type: jsk_pcl/PointIndicesToMaskImage
           remappings:
           - from: ~input
-            to: /pc_to_pi_left_hand/output
+            <!-- to: /pc_to_pi_left_hand/output -->
+            to: /in_hand_clipper/left_hand/point_indices
           - from: ~input/image
             to: $(arg INPUT_IMAGE)
         - name: pi_to_mask_right_hand
           type: jsk_pcl/PointIndicesToMaskImage
           remappings:
           - from: ~input
-            to: /pc_to_pi_right_hand/output
+            <!-- to: /pc_to_pi_right_hand/output -->
+            to: /in_hand_clipper/right_hand/point_indices
           - from: ~input/image
             to: $(arg INPUT_IMAGE)
         - name: closing_left_hand
@@ -83,10 +87,10 @@
   <group ns="in_hand_clipper">
     <rosparam>
       use_multiple_attention: true
-      initial_pos_list: [[0.0, -0.1, 0.3], [0.0, 0.0, 0.15]]
+      initial_pos_list: [[0.0, 0.0, 0.15], [0.0, 0.0, 0.15]]
       initial_rot_list: [[0, 0, 0], [0, 0, 0]]
-      dimensions: [[0.3, 0.2, 0.3], [0.3, 0.3, 0.2]]
-      frame_id_list: [left_custom_vacuum_link_base, right_gripper_vacuum_pad]
+      dimensions: [[0.3, 0.3, 0.2], [0.3, 0.3, 0.2]]
+      frame_id_list: [left_gripper_vacuum_pad, right_gripper_vacuum_pad]
       prefixes: [left_hand, right_hand]
     </rosparam>
   </group>
@@ -144,6 +148,7 @@
 
 
   <!-- self filter -->
+  <!--
   <include file="$(find jsk_2016_01_baxter_apc)/launch/include/self_filter.launch">
     <arg name="INPUT_CLOUD" value="extract_indices_left_hand/points" />
     <arg name="OUTPUT_CLOUD" value="extract_indices_left_hand/points_filtered" />
@@ -152,22 +157,20 @@
     <arg name="INPUT_CLOUD" value="extract_indices_right_hand/points" />
     <arg name="OUTPUT_CLOUD" value="extract_indices_right_hand/points_filtered" />
   </include>
+  -->
 
 
   <!-- object recognition -->
-  <!-- FIXME: in sheeta, vgg16 net infering is too slow, so we use doura. -->
-  <machine name="doura" address="133.11.216.167"
-           env-loader="/home/baxter/env-indigo.sh" user="baxter" />
   <group ns="left_hand">
     <include file="$(find jsk_apc2015_common)/launch/vgg16_object_recognition.launch">
       <arg name="INPUT_IMAGE" value="/apply_mask_left_hand/output" />
-      <arg name="MACHINE" value="doura" />
+      <arg name="MACHINE" value="localhost" />
     </include>
   </group>
   <group ns="right_hand">
     <include file="$(find jsk_apc2015_common)/launch/vgg16_object_recognition.launch">
       <arg name="INPUT_IMAGE" value="/apply_mask_right_hand/output" />
-      <arg name="MACHINE" value="doura" />
+      <arg name="MACHINE" value="localhost" />
     </include>
   </group>
 
