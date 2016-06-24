@@ -2,30 +2,15 @@
 
 import rospy
 from jsk_apc2016_common.msg import BinInfo, BinInfoArray
-from jsk_recognition_msgs.msg import BoundingBox
+from jsk_recognition_msgs.msg import BoundingBox, BoundingBoxArray
 from geometry_msgs.msg import Pose
 import jsk_apc2016_common.segmentation_in_bin.\
         segmentation_in_bin_helper as helper
+import jsk_apc2016_common
 from std_msgs.msg import Header
 
 import json
-
-
-def get_bin_contents_from_json(json_file):
-    with open(json_file, 'r') as f:
-        bin_contents = json.load(f)['bin_contents']
-    for bin_, objects in bin_contents.items():
-        bin_ = bin_.split('_')[1].lower()  # bin_A -> a
-        yield (bin_, objects)
-
-
-def get_target_from_json(json_file):
-    with open(json_file, 'r') as f:
-        data = json.load(f)['work_order']
-    for order in data:
-        bin_ = order['bin'].split('_')[1].lower()  # bin_A -> a
-        target_object = order['item']
-        yield (bin_, target_object)
+import os
 
 
 class BinInfoArrayPublisher(object):
@@ -34,25 +19,38 @@ class BinInfoArrayPublisher(object):
         self.bin_contents_dict = {}
         self.targets_dict = {}
         self.cam_direction_dict = {}
+        self.json_file = None
 
-        self.json_file = rospy.get_param('~json', None)
+        self.pub_bin_info_arr = rospy.Publisher('~bin_array', BinInfoArray, queue_size=1)
 
-        # get bbox from rosparam
-        self.from_shelf_param('upper')
-        self.from_shelf_param('lower')
+    def main(self):
+        duration = rospy.Duration(rospy.get_param('~duration', 1))
+        rospy.Timer(duration, self.bin_info_publlish)
+        rospy.spin()
 
-        # get contents of bin from json
-        self.bin_contents_dict = self.get_bin_contents(self.json_file)
-        self.targets_dict = self.get_targets(self.json_file)
+    def bin_info_publlish(self, event):
+        json = rospy.get_param('~json', None)
 
-        # create bin_msg
-        self.create_bin_info_arr()
+        # update bin_info_arr only when rosparam: json is changd
+        if self.json_file != json:
+            if not os.path.isfile(json) or json[-4:] != 'json':
+                rospy.logwarn('wrong json file name')
+                return
+            self.json_file = json
 
-        pub_bin_info_arr = rospy.Publisher('~bin_array', BinInfoArray, queue_size=1)
-        rate = rospy.Rate(rospy.get_param('rate', 1))
-        while not rospy.is_shutdown():
-            pub_bin_info_arr.publish(self.bin_info_arr)
-            rate.sleep()
+            # get bbox from rosparam
+            self.from_shelf_param('upper')
+            self.from_shelf_param('lower')
+
+            # get contents of bin from json
+            self.bin_contents_dict = jsk_apc2016_common.get_bin_contents(self.json_file)
+            self.targets_dict = jsk_apc2016_common.get_work_order(self.json_file)
+
+            # create bin_msg
+            self.create_bin_info_arr()
+
+        self.bin_info_arr.header.stamp = rospy.Time.now()
+        self.pub_bin_info_arr.publish(self.bin_info_arr)
 
     def from_shelf_param(self, upper_lower):
         upper_lower = upper_lower + '_shelf'
@@ -82,35 +80,9 @@ class BinInfoArrayPublisher(object):
                     dimensions=helper.vector3(dimensions[i]))
             self.cam_direction_dict[bin_] = camera_directions[i]
 
-    def get_bin_contents(self, json_file):
-        bin_contents_dict = {}
-        if json_file is None:
-            rospy.logerr('must set json file path to ~json')
-            return
-        bin_contents = get_bin_contents_from_json(
-                json_file=json_file)
-        bin_contents = list(bin_contents)
-
-        for bin_, objects in bin_contents:
-            bin_contents_dict[bin_.encode('ascii')] = objects
-        return bin_contents_dict
-
-    def get_targets(self, json_file):
-        targets_dict = {}
-        if json_file is None:
-            rospy.logerr('must set json file path to ~json')
-            return
-        targets = get_target_from_json(
-                json_file=json_file)
-        targets = list(targets)
-
-        for bin_, target in targets:
-            targets_dict[bin_.encode('ascii')] = target
-        return targets_dict
-
     def create_bin_info_arr(self):
         self.bin_info_arr = BinInfoArray()
-        for bin_ in self.bin_contents_dict.keys():
+        for bin_ in 'abcdefghijkl':
             self.bin_info_arr.array.append(BinInfo(
                     header=Header(
                             stamp=rospy.Time(0),
@@ -124,8 +96,6 @@ class BinInfoArrayPublisher(object):
 
 
 if __name__ == '__main__':
-    rospy.init_node('set_bin_param')
+    rospy.init_node('publish_bin_info')
     bin_publisher = BinInfoArrayPublisher()
-    rate = rospy.Rate(rospy.get_param('rate', 1))
-    while not rospy.is_shutdown():
-        rate.sleep()
+    bin_publisher.main()
