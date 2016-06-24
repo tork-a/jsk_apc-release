@@ -1,3 +1,31 @@
+## jsk_apc (indigo) - 0.8.1-0
+
+The packages in the `jsk_apc` repository were released into the `indigo` distro by running `/usr/bin/bloom-release jsk_apc --track indigo --rosdistro indigo` on `Fri, 24 Jun 2016 03:24:43 -0000`
+
+These packages were released:
+- `jsk_2015_05_baxter_apc`
+- `jsk_2016_01_baxter_apc`
+- `jsk_apc`
+- `jsk_apc2015_common`
+- `jsk_apc2016_common`
+
+Version of package(s) in repository `jsk_apc`:
+
+- upstream repository: https://github.com/start-jsk/jsk_apc.git
+- release repository: https://github.com/tork-a/jsk_apc-release.git
+- rosdistro version: `0.8.0-2`
+- old version: `0.8.0-2`
+- new version: `0.8.1-0`
+
+Versions of tools used:
+
+- bloom version: `0.5.21`
+- catkin_pkg version: `0.2.10`
+- rosdep version: `0.11.5`
+- rosdistro version: `0.4.7`
+- vcstools version: `0.1.38`
+
+
 ## jsk_apc (indigo) - 0.8.0-1
 
 The packages in the `jsk_apc` repository were released into the `indigo` distro by running `/usr/bin/bloom-release --rosdistro indigo --track indigo jsk_apc` on `Tue, 31 May 2016 23:19:02 -0000`
