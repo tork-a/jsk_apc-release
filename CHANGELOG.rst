@@ -2,8 +2,13 @@
 Changelog for package jsk_apc2015_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.8.1 (2016-06-24)
+------------------
+* Update CHANGELOG.rst for 0.8.0
+* Contributors: Kentaro Wada
+
+0.8.0 (2016-05-31)
+------------------
 * Add vgg16 object_recognition.launch
 * Visualize pick json with APC2016 objects
 * 2015 launch files do not depend on 2016 config
