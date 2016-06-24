@@ -47,7 +47,7 @@
   <run_depend>jsk_data</run_depend>
   <run_depend>message_generation</run_depend>
 
-  <test_depend>python-gdown</test_depend>
+  <!-- <test_depend>python-gdown</test_depend> -->
   <test_depend>rostest</test_depend>
   <test_depend>roslint</test_depend>
   <test_depend>jsk_tools</test_depend>
