@@ -40,26 +40,25 @@
   (:inverse-kinematics
     (target-coords
       &rest args
-      &key link-list
+      &key link-list (use-gripper nil)
       &allow-other-keys)
     ;; if the last lik of link-list is a gripper, remove them
-    (when (member (send (car (last link-list)) :name) (list "right_gripper_vacuum_pad_base" "left_gripper_vacuum_pad_base") :test #'equal)
-      (setq link-list (butlast link-list)))
+    (if (null use-gripper)
+      (when (member (send (car (last link-list)) :name)
+                    (list "right_gripper_vacuum_pad_base"
+                          "left_gripper_vacuum_pad_base") :test #'equal)
+            (setq link-list (butlast link-list))) nil)
     (send-super* :inverse-kinematics target-coords :link-list link-list
                  args)
     )
   (:rotate-wrist
-    (arm angle)
-    (let (wrist-index av-tmp)
-      (setq wrist-index (if (eq arm :larm) 7 14))
-      (setq av-tmp (send self :angle-vector))
-      (setf (elt av-tmp wrist-index) (+ (elt av-tmp wrist-index) angle))
-      (send self :angle-vector av-tmp))
+    (arm angle &key (relative t))
+    (send self arm :wrist-r :joint-angle angle :relative relative)
+    (send self :angle-vector)
     )
   (:rotate-gripper
     (arm angle &key (relative t))
-    (if (eq arm :rarm)
-      (send self arm :gripper-p :joint-angle angle :relative relative))
+    (send self arm :gripper-p :joint-angle angle :relative relative)
     (send self :angle-vector)
     )
   (:avoid-shelf-pose
@@ -100,6 +99,24 @@
               :rotation-axis nil
               :revert-if-fail nil)
         )
+      )
+    )
+  (:visualize-path
+    (avs &key (limb))
+    (let (robots coords-list)
+      (dotimes (i (length avs))
+        (let ((robot (instance (class self) :init)))
+          (send robot :angle-vector (elt avs i))
+          (when (not (eq i (1- (length avs))))
+            (send-all (send robot :bodies) :set-color nil 0.3)
+            )
+          (pushback robot robots)
+          (when limb
+            (pushback (send robot limb :end-coords) coords-list)
+            )
+          )
+        )
+      (objects (append robots coords-list))
       )
     )
   )
