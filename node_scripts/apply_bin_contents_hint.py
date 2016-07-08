@@ -22,7 +22,7 @@ class ApplyBinContentsHint(ConnectionBasedTransport):
 
     def subscribe(self):
         self.sub = rospy.Subscriber('~input', ClassificationResult,
-                                    self._apply)
+                                    self._apply, queue_size=1)
 
     def unsubscribe(self):
         self.sub.unregister()
@@ -33,7 +33,12 @@ class ApplyBinContentsHint(ConnectionBasedTransport):
             return
 
         # get candidates probabilities
-        candidates = self.bin_contents.get(target_bin)
+        if target_bin not in self.bin_contents:
+            rospy.logerr("target_bin '{0}' is not found in json: {1}"
+                         .format(target_bin, self.bin_contents))
+            return
+
+        candidates = self.bin_contents[target_bin] + ['no_object']
         label_to_proba = dict(zip(msg.target_names, msg.probabilities))
         candidates_proba = [label_to_proba[label] for label in candidates]
         candidates_proba = np.array(candidates_proba)
