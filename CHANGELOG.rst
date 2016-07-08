@@ -2,6 +2,16 @@
 Changelog for package jsk_2015_05_baxter_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.0.0 (2016-07-08)
+------------------
+* kiva pod interactive marker
+* Adjust base -> kiva_pod_base
+* Adjust tf base -> kiva_pod_base
+* Adjust tf base -> kiva_pod_base
+* Adjust tf base -> kiva_pod_base again
+* Adjust tf base -> kiva_pod_base
+* Contributors: Kentaro Wada, Yusuke Niitani
+
 0.8.1 (2016-06-24)
 ------------------
 * adjust kiva pod base
