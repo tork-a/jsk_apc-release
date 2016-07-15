@@ -2,6 +2,9 @@
 Changelog for package jsk_2015_05_baxter_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.5.0 (2016-07-09)
+------------------
+
 1.0.0 (2016-07-08)
 ------------------
 * kiva pod interactive marker
@@ -20,6 +23,28 @@ Changelog for package jsk_2015_05_baxter_apc
 * Adjust kinect2_torso tf and add rvizconfig for that
 * Update CHANGELOG.rst for 0.8.0
 * Contributors: Kentaro Wada, Yusuke Niitani
+
+1.5.1 (2016-07-15)
+------------------
+* 1.5.0
+* Update CHANGELOG.rst to release 1.5.0
+* 1.0.0
+* Update CHANGELOG.rst
+* kiva pod interactive marker
+* Adjust base -> kiva_pod_base
+* Adjust tf base -> kiva_pod_base
+* Adjust tf base -> kiva_pod_base
+* Adjust tf base -> kiva_pod_base again
+* Adjust tf base -> kiva_pod_base
+* 0.8.1
+* update CHANGELOG
+* 0.8.1
+* adjust kiva pod base
+* Use standalone_complexed_nodelet for Kinect2 in jsk_apc
+* Put Kinect2 calib data on jsk_apc
+* Adjust kinect2_torso tf and add rvizconfig for that
+* Update CHANGELOG.rst for 0.8.0
+* Contributors: Kei Okada, Kentaro Wada, Yusuke Niitani
 
 0.8.0 (2016-05-31)
 ------------------
