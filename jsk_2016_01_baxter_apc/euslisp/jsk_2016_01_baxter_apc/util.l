@@ -14,6 +14,11 @@
   "
   (let ((config (instance dynamic_reconfigure::Config :init))
         (req (instance dynamic_reconfigure::ReconfigureRequest :init)))
+    (cond
+      ((not (listp params)) (warn "Unexpected type for params"))
+      ((<= (length params) 0) (return-from 'ros::set-dynparam t))
+      ((not (listp (elt params 0))) (setq params (list params)))
+      )
     (dolist (param params)
       (let ((name (car param)) (value (cdr param)) (dynparam))
         (cond
@@ -74,3 +79,22 @@
 (defun ros::ros-info-cyan (fmt &rest args)
   (ros::ros-info "~C[3~Cm~A~C[0m" #x1b 54 (apply #'format nil fmt args) #x1b)
   )
+
+
+;; ------------------------------------------------------------------------------------------------
+;; Json Utils
+;; ------------------------------------------------------------------------------------------------
+
+(require :json-decode "package://roseus_mongo/euslisp/json/json-decode.l")
+
+(defun read-file-into-string (filename)
+  (with-open-file (f filename :direction :input)
+    (let (buf (str-list nil))
+      (while (setq buf (read-line f nil))
+             (setq str-list (append str-list (list (format nil buf)))))
+      (reduce #'(lambda (x y) (concatenate string x y)) str-list))))
+
+(defun read-json-into-string (filename)
+  (if (substringp "package://" filename)
+    (setq filename (ros::resolve-ros-path filename)))
+  (json::parse-from-string (read-file-into-string filename)))
