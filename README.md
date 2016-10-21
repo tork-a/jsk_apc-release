@@ -1,5 +1,32 @@
-jsk\_2016\_01\_baxter\_apc
-==========================
+jsk\_apc
+=======
+
+<img src="images/icon_white.png" align="right" width="192px" />
+
+[![GitHub version](https://badge.fury.io/gh/start-jsk%2Fjsk_apc.svg)](https://badge.fury.io/gh/start-jsk%2Fjsk_apc)
+[![](https://travis-ci.org/start-jsk/jsk_apc.svg)](https://travis-ci.org/start-jsk/jsk_apc)
+[![Gitter](https://badges.gitter.im/start-jsk/jsk_apc.svg)](https://gitter.im/start-jsk/jsk_apc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Slack](https://img.shields.io/badge/slack-%23jsk__apc-e100e1.svg)](https://jsk-robotics.slack.com/messages/jsk_apc/)
+[![Documentation Status](https://readthedocs.org/projects/jsk-apc/badge/?version=latest)](http://jsk-apc.readthedocs.org/en/latest/?badge=latest)
+
+
+**jsk_apc** is a stack of ROS packages for [Amazon Picking Challenge](http://amazonpickingchallenge.org) mainly developed by JSK lab.  
+The documentation is available at [here](http://jsk-apc.readthedocs.org).
+
+
+Build Status
+------------
+
+| Package | Indigo (Trusty) |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| jsk_apc (32-bit) | [![Build Status](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/) |
+| jsk_apc (64-bit) | [![Build Status](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/) |
+
+
+Usage
+-----
+
+See [jsk_2015_05_baxter_apc](http://jsk-apc.readthedocs.org/en/latest/jsk_2015_05_baxter_apc/index.html).
 
 
 Install
@@ -9,48 +36,73 @@ Install
 ### Required
 
 1. Install the ROS. [Instructions for ROS indigo on Ubuntu 14.04](http://wiki.ros.org/indigo/Installation/Ubuntu).
-2. [Setup your ROS environment](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment). **Please make sure that you're using [Shadow Fixed Repository](http://wiki.ros.org/ShadowRepository)**
-
-  ```sh
-$ cat /etc/apt/sources.list.d/ros-latest.list
-#deb http://packages.ros.org/ros/ubuntu trusty main
-deb http://packages.ros.org/ros-shadow-fixed/ubuntu trusty main
-$ sudo apt-get update
-$ sudo apt-get dist-upgrade
-  ```
-
+2. [Setup your ROS environment](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment).
 3. Build catkin workspace for [jsk\_apc](https://github.com/start-jsk/jsk_apc):
 
 ```sh
 $ mkdir -p ~/ros/ws_jsk_apc/src && cd ~/ros/ws_jsk_apc/src
-$ wstool init . https://raw.githubusercontent.com/start-jsk/jsk_apc/master/jsk_2016_01_baxter_apc/rosinstall
+$ wstool init . https://raw.githubusercontent.com/start-jsk/jsk_apc/master/fc.rosinstall
 $ cd ..
-$ rosdep install -y -r --from-paths . --ignore-src
+$ rosdep install -y -r --from-paths .
+$ sudo apt-get install python-catkin-tools ros-indigo-jsk-tools
 $ catkin build
 $ source devel/setup.bash
 ```
 
-As of 2016/1/27, we're using following version for baxter simulation
+* Edit `/etc/hosts`:
+
 ```
-$ rosrun jsk_2016_01_baxter_apc check_baxter_pkg_version.sh
-rosversion baxter_core_msgs     1.2.0
-rosversion baxter_description   1.2.0
-rosversion baxter_gazebo        1.2.12
-rosversion baxter_interface     1.2.0
-rosversion baxter_maintenance_msgs 1.2.0
-rosversion baxter_sim_controllers  1.2.12
-rosversion baxter_sim_hardware  1.2.12
-rosversion baxter_sim_io        1.2.12
-rosversion baxter_sim_kinematics   1.2.12
-rosversion baxter_tools         1.2.0
-rosversion baxtereus            1.0.1
+133.11.216.214 baxter 011310P0014.local
 ```
 
-Usage
------
+* Add below in your `~/.bashrc`:
+```
+$ rossetmaster baxter.jsk.imi.i.u-tokyo.ac.jp
+$ rossetip
 
-### Run Demo on Gazebo Simulator
+$ # we recommend below setup (see http://jsk-docs.readthedocs.org/en/latest/jsk_common/doc/jsk_tools/cltools/setup_env_for_ros.html)
+$ echo """
+rossetip
+rosdefault
+""" >> ~/.bashrc
+$ rossetdefault baxter  # set ROS_MASTER_URI as http://baxter:11311
+```
 
-```sh
-$ roslaunch jsk_2016_01_baxter_apc baxter_pick.launch
+
+### Optional
+
+**Setup Kinect2**
+
+Please follow [Instructions at code-iai/iai\_kinect2](https://github.com/code-iai/iai_kinect2#install),
+however, maybe you have error with the master branch. In that case, please use
+[this rosinstall](https://github.com/start-jsk/jsk_apc/blob/master/kinect2.rosinstall).
+
+**Setup rosserial + vacuum gripper**
+
+Write below in `/etc/udev/rules.d/90-rosserial.rules`:
+
+```
+# ATTR{product}=="rosserial"
+SUBSYSTEM=="tty", MODE="0666"
+```
+
+**Setup SSH**
+
+Write below in `~/.ssh/config`:
+
+```
+Host baxter
+  HostName baxter.jsk.imi.i.u-tokyo.ac.jp
+  User ruser  # password: rethink
+```
+
+**Setup Softkinetic Camera**
+
+See [here](http://jsk-recognition.readthedocs.org/en/latest/install_softkinetic_camera.html) for almost all install process,
+but for installing ROS package please do like below:
+
+```bash
+git clone https://github.com/knorth55/softkinetic.git -b jsk_apc
+cd softkinetic/softkinetic_camera
+catkin bt -iv
 ```
