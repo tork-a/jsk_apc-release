@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 # need pip installed version of python-jenkins > 0.4.0
-# need pip installed version of progressbar2 > 0.3.2
 
 import jenkins
 import urllib
@@ -9,8 +8,8 @@ import urllib2
 import json
 import time
 import os
+import re
 import sys
-import progressbar
 
 from os import environ as env
 
@@ -224,7 +223,6 @@ def wait_for_finished(name, number):
     display = 300
     loop = 0
     result = None
-    pbar = progressbar.ProgressBar(0, 1, redirect_stdout=True)
     while True :
         now = time.time() * 1000
         try:
@@ -245,12 +243,10 @@ def wait_for_finished(name, number):
             break
         # update progressbar
         progress = (now - info['timestamp']) / info['estimatedDuration']
-        pbar.update(min(progress, 1))  # in case of longer than estimatation
         if loop % (display/sleep) == 0:
-            print info['url'], "building..", info['building'], "result...", info['result']
+            print info['url'], "building: ", info['building'], "result: ", info['result'], "progress: ", progress
         time.sleep(sleep)
         loop += 1
-    pbar.finish()
     return result
 
 def wait_for_building(name, number):
@@ -331,14 +327,19 @@ NUMBER_OF_LOGS_TO_KEEP = %(NUMBER_OF_LOGS_TO_KEEP)s
 
 if env.get('ROS_DISTRO') == 'hydro':
     LSB_RELEASE = '12.04'
+    UBUNTU_DISTRO = 'precise'
 elif env.get('ROS_DISTRO') == 'indigo':
     LSB_RELEASE = '14.04'
+    UBUNTU_DISTRO = 'trusty'
 elif env.get('ROS_DISTRO') == 'jade':
     LSB_RELEASE = '14.04'
+    UBUNTU_DISTRO = 'trusty'
 elif env.get('ROS_DISTRO') == 'kinetic':
     LSB_RELEASE = '16.04'
+    UBUNTU_DISTRO = 'xenial'
 else:
     LSB_RELEASE = '14.04'
+    UBUNTU_DISTRO = 'trusty'
 
 ### start here
 j = Jenkins('http://jenkins.jsk.imi.i.u-tokyo.ac.jp:8080/', 'k-okada', '22f8b1c4812dad817381a05f41bef16b')
@@ -354,7 +355,25 @@ if j.get_plugin_info('build-timeout'):
 else:
     print('you need to install build_timeout plugin')
 # set job_name
-job_name = '-'.join(filter(bool, ['trusty-travis',TRAVIS_REPO_SLUG, ROS_DISTRO, 'deb', USE_DEB, EXTRA_DEB, NOT_TEST_INSTALL, BUILD_PKGS])).replace('/','-').replace(' ','-')
+job_name = '-'.join(
+    filter(
+        bool,
+        [
+            UBUNTU_DISTRO,
+            'travis',
+            TRAVIS_REPO_SLUG,
+            ROS_DISTRO,
+            'deb',
+            USE_DEB,
+            EXTRA_DEB,
+            NOT_TEST_INSTALL,
+            BUILD_PKGS,
+            BEFORE_SCRIPT,
+            ROS_REPOSITORY_PATH,
+        ]
+    )
+)
+job_name = re.sub(r'[^0-9A-Za-z]+', '-', job_name)
 if j.job_exists(job_name) is None:
     j.create_job(job_name, jenkins.EMPTY_CONFIG_XML)
 
