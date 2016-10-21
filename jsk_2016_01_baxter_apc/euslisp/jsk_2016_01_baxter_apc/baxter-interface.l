@@ -220,6 +220,16 @@
     (+ (gethash :bin-reachable-depth-gripper-90 _hard-coded-variables)
        (* (gethash :pad-link-l _hard-coded-variables) (cos (deg2rad gripper-angle))))
     )
+  (:set-object-segmentation-candidates
+    (&key arm candidates)
+    (let ((req (instance jsk_recognition_msgs::SetLabelsRequest :init)))
+      (send req :labels candidates)
+      (ros::service-call
+        (format nil "/~a_hand_camera/apply_context_to_label_proba/update_candidates"
+                (arm2str arm))
+        req)
+      )
+    )
   (:need-to-wait-opposite-arm-for-stow
     (arm &key (state))
     (let (opposite-state opposite-target arm-target)
@@ -276,7 +286,8 @@
       ))
   (:fold-pose-back
     (&optional (arm :arms))
-    (send *baxter* :fold-pose-back arm)
+    (dolist (tmp-arm (if (eq arm :arms) (list :rarm :larm) (list arm)))
+      (send *baxter* :fold-pose-back tmp-arm))
     (send *ri* :send-av))
   (:detect-target-object-in-bin
     (target-object bin)
@@ -297,7 +308,7 @@
       (position box-size box-sizes-bak)))
   (:recognize-bin-boxes
     (&key (stamp (ros::time-now)))
-    (let ((box-topic (format nil "publish_bin_bbox/boxes"))
+    (let ((box-topic (format nil "publish_bin_boxes/output"))
           box-msg bin-list)
       (setq box-msg (one-shot-subscribe box-topic
                                         jsk_recognition_msgs::BoundingBoxArray
@@ -314,8 +325,8 @@
         (ros::ros-fatal "[:recognize-bin-boxes] cannot recognize bin boxes"))))
   (:recognize-order-bin-box
     (arm &key (stamp (ros::time-now)))
-    (let ((box-topic (format nil "~a_in_tote_clipper/output/box_array"
-                             (send self :arm-symbol2str arm)))
+    (let ((box-topic (format nil "~a_hand_camera/in_tote_clipper/output/box_array"
+                             (arm2str arm)))
                      box-msg bbox)
       (setq box-msg (one-shot-subscribe box-topic
                                         jsk_recognition_msgs::BoundingBoxArray
@@ -323,10 +334,10 @@
                                         :after-stamp stamp))
       (if box-msg
         (progn
-          (ros::ros-info "[:recognize-order-bin-box] arm: ~a Recognize order bin box" (send self :arm-symbol2str arm))
+          (ros::ros-info "[:recognize-order-bin-box] arm: ~a Recognize order bin box" (arm2str arm))
           (setq bbox (car (send box-msg :boxes)))
           (sethash arm _order-bin-box bbox))
-        (ros::ros-fatal "[:recognize-order-bin-box] arm: ~a Cannot find order bin" (send self :arm-symbol2str arm)))))
+        (ros::ros-fatal "[:recognize-order-bin-box] arm: ~a Cannot find order bin" (arm2str arm)))))
   (:bbox->cube
     (bbox)
     (let* ((dims (ros::tf-point->pos (send bbox :dimensions)))
@@ -390,7 +401,7 @@
         (progn
           (setq cube (send self :bbox->cube (gethash arm _order-bin-box)))
           (sethash arm _movable-region (send self :cube->movable-region cube :offset offset)))
-        (ros::ros-error "[:get-movable-region-for-tote] arm: ~a No order bin found. Do :recognize-order-bin-box first." (send self :arm-symbol2str arm)))))
+        (ros::ros-error "[:get-movable-region-for-tote] arm: ~a No order bin found. Do :recognize-order-bin-box first." (arm2str arm)))))
   (:cube->movable-region
     (cube &key (offset (list 0 0 0)))
     (let (movable-region vertex-values)
@@ -460,11 +471,12 @@
       (sethash bin _objects-in-bin-coms com-msg)))
   (:recognize-objects-segmentation-in-bin
     (arm bin &key (stamp (ros::time-now)) (timeout 5))
-    (let ((box-topic (format nil "~a_sib_cpi_decomposer/boxes" (send self :arm-symbol2str arm)))
+    (let ((box-topic
+            (format nil "~a_hand_camera/cluster_indices_decomposer_target/boxes" (arm2str arm)))
           box-msg
-          (com-topic (format nil
-                             "~a_sib_cpi_decomposer/centroid_pose_array"
-                             (send self :arm-symbol2str arm)))
+          (com-topic
+            (format nil "~a_hand_camera/cluster_indices_decomposer_target/centroid_pose_array"
+                        (arm2str arm)))
           com-msg obj-box obj-coords)
       (ros::subscribe box-topic jsk_recognition_msgs::BoundingBoxArray
                       #'(lambda (msg)
@@ -500,9 +512,10 @@
          (sethash bin _objects-sib-coords nil)))))
   (:recognize-objects-in-order-bin
     (&key arm (stamp (ros::time-now)) (timeout 10))
-    (let ((box-topic (format nil "~a_in_tote_supervoxel_cpi_decomposer/boxes" (send *ri* :arm-symbol2str arm)))
+    (let ((box-topic (format nil "~a_hand_camera/cluster_indices_decomposer_target/boxes" (arm2str arm)))
           box-msg
-          (com-topic (format nil "~a_in_tote_supervoxel_cpi_decomposer/centroid_pose_array" (send *ri* :arm-symbol2str arm)))
+          (com-topic (format nil "~a_hand_camera/cluster_indices_decomposer_target/centroid_pose_array"
+                        (arm2str arm)))
           com-msg obj-box obj-coords)
       (ros::subscribe box-topic jsk_recognition_msgs::BoundingBoxArray
                       #'(lambda (msg)
@@ -579,7 +592,7 @@
     (let (msg x-length)
       (setq msg
             (one-shot-subscribe
-              (format nil "cpi_decomposer_~a_hand/boxes" (send *ri* :arm-symbol2str arm))
+              (format nil "cpi_decomposer_~a_hand/boxes" (arm2str arm))
               jsk_recognition_msgs::BoundingBoxArray
               :after-stamp stamp
               :timeout timeout))
@@ -1396,7 +1409,7 @@
     (setq
       msg
       (one-shot-subscribe
-        (format nil "work_order/~a_hand" (send self :arm-symbol2str arm))
+        (format nil "/strategic_work_order/~a_hand" (send self :arm-symbol2str arm))
         jsk_2015_05_baxter_apc::WorkOrderArray))
     (send msg :array))
   (:get-next-work-order
@@ -1414,11 +1427,12 @@
     (if (gethash bin _bin-boxes) t nil))
   (:get-bin-contents
     (bin)
-    (let (msg)
-      (setq msg (one-shot-subscribe "bin_contents" jsk_2015_05_baxter_apc::BinContentsArray))
-      (dolist (c (send msg :array))
-        (when (string= (symbol2str bin) (send c :bin))
-          (return-from :get-bin-contents (send c :objects))))))
+    (ros::get-param
+      (concatenate string
+                   "/bin_contents/bin_"
+                   (symbol-string bin))))
+  (:get-tote-contents ()
+    (ros::get-param "/tote_contents"))
   (:real-sim-end-coords-diff
     (arm)
     (let (real-coords sim-coords diff-coords thresh)
@@ -1434,11 +1448,11 @@
     """wait for user input to start"""
     (let (can-start)
       (ros::ros-info "[:wait-for-user-input-to-start] wait for user input to start: ~a" arm)
-      (ros::wait-for-service "rqt_yn_btn")
+      (ros::wait-for-service "/rviz/yes_no_button")
       (while
         (not can-start)
         (setq can-start (send (ros::service-call
-                                "rqt_yn_btn" (instance jsk_rqt_plugins::YesNoRequest)) :yes))
+                                "/rviz/yes_no_button" (instance jsk_gui_msgs::YesNoRequest)) :yes))
         )
       (ros::ros-info "[:wait-for-user-input-to-start] received user input: ~a" arm)
       ))
@@ -1453,9 +1467,9 @@
           (let ((pressure (send (one-shot-subscribe topic std_msgs::Float64) :data)))
             (when (or (null min-pressure) (< pressure min-pressure)) (setq min-pressure pressure))
             )
-          (unix::usleep (* 500 1000))
+          (unix::sleep 1)
           )
-        (sethash hashkey _hard-coded-variables (- min-pressure 10))
+        (sethash hashkey _hard-coded-variables (- min-pressure 20))
         )
       )
     (send self :stop-grasp arm)

@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
     baxter_core_msgs
+    message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -53,11 +54,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  UpdateTarget.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -67,10 +67,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -140,7 +140,7 @@ add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.dae
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
   DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.urdf)
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.urdf
-  COMMAND rosrun xacro xacro baxter.xacro > baxter.urdf
+  COMMAND ROS_PACKAGE_PATH=${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH} rosrun xacro xacro baxter.xacro > baxter.urdf
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
   DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.xacro
           ${PROJECT_SOURCE_DIR}/robots/right_arm_camera.xacro
@@ -239,6 +239,7 @@ if(CATKIN_ENABLE_TESTING)
   roslint_add_test()
   find_package(rostest REQUIRED)
   add_rostest(test/work_order.test)
+  add_rostest(test/stow_work_order.test)
   add_rostest(test/apply_bin_contents_hint.test)
   add_custom_target(download_test_data COMMAND ${PROJECT_SOURCE_DIR}/scripts/download_test_data.py)
   if(TARGET tests)
@@ -246,6 +247,7 @@ if(CATKIN_ENABLE_TESTING)
   endif()
   # add_rostest(test/test_move_arm_to_bin.test)
   add_rostest(test/test_ik_in_bin.test)
+  add_rostest(test/test_ik_in_tote.test)
   add_rostest(test/test_again_approach_bin_l.test)
   find_package(roslaunch REQUIRED)
   roslaunch_add_file_check(launch/include/vacuum_gripper.launch)
