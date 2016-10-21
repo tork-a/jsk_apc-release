@@ -200,6 +200,14 @@ install(DIRECTORY include/sib/
   PATTERN ".svn" EXCLUDE
 )
 
+## rqt plugin
+install(FILES plugin.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(PROGRAMS bin/rqt_select_target
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(DIRECTORY resource
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
 #   # myfile1
@@ -229,4 +237,6 @@ if(CATKIN_ENABLE_TESTING)
   roslint_add_test()
   # unit tests
   catkin_add_nosetests(python/jsk_apc2016_common/tests)
+  find_package(rostest REQUIRED)
+  add_rostest(test/publish_bin_bbox.test)
 endif()
