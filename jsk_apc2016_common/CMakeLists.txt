@@ -64,11 +64,10 @@ add_message_files(
   )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  UpdateTarget.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -171,6 +170,8 @@ target_link_libraries(cloud_to_spatial_features ${catkin_LIBRARIES} ${Eigen_LIBR
 
 # trained data
 add_custom_target(install_trained_data ALL COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_trained_data.py)
+# sample data
+add_custom_target(install_sample_data ALL COMMAND ${PROJECT_SOURCE_DIR}/scripts/install_sample_data.py)
 
 #############
 ## Install ##
@@ -203,7 +204,7 @@ install(DIRECTORY include/sib/
 ## rqt plugin
 install(FILES plugin.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(PROGRAMS bin/rqt_select_target
+install(PROGRAMS node_scripts/rqt_select_target
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY resource
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

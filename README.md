@@ -1,7 +1,7 @@
 jsk\_apc
 =======
 
-<img src="images/icon_white.png" align="right" width="192px" />
+<img src="jsk_apc2016_common/resource/icons/icon_white.png" align="right" width="192px" />
 
 [![GitHub version](https://badge.fury.io/gh/start-jsk%2Fjsk_apc.svg)](https://badge.fury.io/gh/start-jsk%2Fjsk_apc)
 [![](https://travis-ci.org/start-jsk/jsk_apc.svg)](https://travis-ci.org/start-jsk/jsk_apc)
@@ -17,10 +17,10 @@ The documentation is available at [here](http://jsk-apc.readthedocs.org).
 Build Status
 ------------
 
-| Package | Indigo (Trusty) |
-|--------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| jsk_apc (32-bit) | [![Build Status](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/) |
-| jsk_apc (64-bit) | [![Build Status](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/) |
+| Package         | Indigo (Trusty)                                                                                                                                                                          |
+|:----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| jsk_apc (i386)  | [![Build Status](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uT32__jsk_apc__ubuntu_trusty_i386__binary)           |
+| jsk_apc (amd64) | [![Build Status](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uT64__jsk_apc__ubuntu_trusty_amd64__binary)         |
 
 
 Usage
@@ -84,6 +84,16 @@ Write below in `/etc/udev/rules.d/90-rosserial.rules`:
 ```
 # ATTR{product}=="rosserial"
 SUBSYSTEM=="tty", MODE="0666"
+```
+
+**Setup DXHUB + gripper-v5(and later)**
+
+Write below in `/etc/udev/rules.d/80-dxhub.rules`:
+
+```
+# Create symlink /dev/r_dxhub
+# For now, connection to only one DXHUB is supported
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015" MODE:="0666", SYMLINK+="r_dxhub"
 ```
 
 **Setup SSH**
