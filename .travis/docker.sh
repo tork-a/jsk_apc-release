@@ -31,6 +31,7 @@ function travis_time_end {
 export -f travis_time_end
 
 function travis_wait {
+  set +x
   local timeout=$1
 
   if [[ $timeout =~ ^[0-9]+$ ]]; then
@@ -66,6 +67,7 @@ function travis_wait {
   echo -e "\n${ANSI_GREEN}Log:${ANSI_RESET}\n"
   cat $log_file
 
+  set -x
   return $result
 }
 export -f travis_wait
@@ -112,11 +114,8 @@ adduser travis sudo
 chown -R travis:travis $HOME
 echo "travis ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
-# setup virtual display
-sudo -E apt-get -y -qq install mesa-utils xserver-xorg-video-dummy xvfb
-export DISPLAY=:0
-sudo -E Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile /tmp/xorg.log -config dummy.xorg.conf $DISPLAY &
-sleep 3
+# check display
+sudo -E apt-get -y -qq install mesa-utils
 glxinfo | grep GLX
 
 # ensure setting testing environment same as travis
