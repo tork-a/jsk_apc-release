@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_apc2016_common</name>
-  <version>2.0.0</version>
+  <version>3.0.0</version>
   <description>The jsk_apc2016_common package</description>
 
   <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
@@ -11,7 +11,7 @@
   <maintainer email="niitani@jsk.imi.i.u-tokyo.ac.jp">Yusuke Niitani</maintainer>
   <author email="www.kentaro.wada@gmail.com">Kentaro Wada</author>
   <license>BSD</license>
-
+  <url>http://wiki.ros.org/jsk_apc2016_common</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
