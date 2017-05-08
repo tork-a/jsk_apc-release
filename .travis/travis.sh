@@ -61,8 +61,8 @@ travis_time_end is_jsk_travis_upgraded
 [ "${USE_TRAVIS// }" = "" ] && USE_TRAVIS=false
 
 # Deprecated environmental variables
-[ ! -z $BUILDER -a "$BUILDER" != catkin ] && ( echo "ERROR: $BUILDER is not supported. BUILDER env is deprecated and only 'catkin' is supported for the build."; exit 1; )
-[ ! -z $ROSWS -a "$ROSWS" != wstool ] && ( echo "ERROR: $ROSWS is not supported. ROSWS env is deprecated and only 'wstool' is supported for workspace management."; exit 1; )
+[ ! -z $BUILDER ] && [ "$BUILDER" != catkin ] && ( echo "ERROR: $BUILDER is not supported. BUILDER env is deprecated and only 'catkin' is supported for the build."; exit 1; )
+[ ! -z $ROSWS ] && [ "$ROSWS" != wstool ] && ( echo "ERROR: $ROSWS is not supported. ROSWS env is deprecated and only 'wstool' is supported for workspace management."; exit 1; )
 
 # docker on travis
 if [ "$USE_DOCKER" = true ]; then
@@ -75,11 +75,24 @@ if [ "$USE_DOCKER" = true ]; then
     esac
     export DOCKER_IMAGE=ubuntu:$DISTRO
   fi
+
+  # use host xserver
+  sudo apt-get update -q || echo Ignore error of apt-get update
+  sudo apt-get -y -qq install mesa-utils x11-xserver-utils xserver-xorg-video-dummy
+  export DISPLAY=:0
+  sudo Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile /tmp/xorg.log -config $CI_SOURCE_PATH/.travis/dummy.xorg.conf $DISPLAY &
+  sleep 3 # wait x server up
+  glxinfo | grep GLX
+  export QT_X11_NO_MITSHM=1 # http://wiki.ros.org/docker/Tutorials/GUI
+  xhost +local:root
+
   docker run -it -v $HOME:$HOME \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e QT_X11_NO_MITSHM -e DISPLAY \
     -e TRAVIS_BRANCH -e TRAVIS_COMMIT -e TRAVIS_JOB_ID -e TRAVIS_OS_NAME -e TRAVIS_PULL_REQUEST -e TRAVIS_REPO_SLUG \
     -e CI_SOURCE_PATH -e HOME -e REPOSITORY_NAME \
     -e BUILD_PKGS -e TARGET_PKGS -e TEST_PKGS \
-    -e BEFORE_SCRIPT -e BUILDER -e EXTRA_DEBS -e USE_DEB \
+    -e BEFORE_SCRIPT -e BUILDER -e EXTRA_DEB -e USE_DEB \
     -e ROS_DISTRO -e ROS_LOG_DIR -e ROS_REPOSITORY_PATH -e ROSWS \
     -e CATKIN_TOOLS_BUILD_OPTIONS -e CATKIN_TOOLS_CONFIG_OPTIONS \
     -e CATKIN_PARALLEL_JOBS -e CATKIN_PARALLEL_TEST_JOBS \

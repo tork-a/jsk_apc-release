@@ -4,33 +4,33 @@
 ;; *rarm-able* : ik-solvable range only in right arm
 ;; *disbale* : ik-unsolvable range in both arms
 
-(load "package://jsk_2015_05_baxter_apc/euslisp/test/data/bin-cubes.l")
+(load "package://jsk_2015_05_baxter_apc/euslisp/test/data/bin-cubes-alist.l")
 (require "package://jsk_2016_01_baxter_apc/euslisp/jsk_2016_01_baxter_apc/baxter.l")
 (load "package://jsk_2015_05_baxter_apc/euslisp/jsk_2015_05_baxter_apc/util.l")
 
 (defun check-init ()
   (setq *baxter* (instance jsk_2016_01_baxter_apc::baxter-robot :init))
-  (setq *cubes* (remove nil (mapcar #'cdr (send *bin-cubes* :list))))
+  (setq *cubes* (mapcar #'cdr *bin-cubes-alist*))
   (setq *bin-keys* (list :a :b :c :d :e :f :g :h :i :j :k :l))
   (setq *able* nil)
   (setq *larm-able* nil)
   (setq *rarm-able* nil)
   (setq *disable* nil)
   (setq *pos-bin-list* nil)
-  (objects (append (list *baxter*) *cubes*))
+  (objects (list *baxter* *cubes*))
   )
 
 (defun dump-range ()
   (dump-loadable-structure "ik-range.l" *baxter* *able* *larm-able* *rarm-able* *disable*))
 
 (defun visualize ()
-  (objects (pushback *baxter* (append *able* *disable*))))
+  (objects (list *baxter* *able* *disable*)))
 
 (defun check-baxter-ik-all-bin (&optional (step-dist 100))
   (check-init)
   (dolist (key *bin-keys*)
     (format t "bin :~A~%" key)
-    (setq cube (gethash key *bin-cubes*))
+    (setq cube (cdr (assoc key *bin-cubes-alist*)))
     (setq dx (x-of-cube cube))
     (setq dy (y-of-cube cube))
     (setq dz (z-of-cube cube))
@@ -52,14 +52,16 @@
           (send *baxter* :reset-pose)
           (if (send *baxter* :larm :inverse-kinematics
                     (make-cascoords :pos pos)
-                    :rotation-axis t
+                    :use-gripper t
+                    :rotation-axis :z
                     :debug-view :no-message)
             (format t "success to solve ik in left arm~%")
             (setq larm-bool nil))
           (send *baxter* :reset-pose)
           (if (send *baxter* :rarm :inverse-kinematics
                     (make-cascoords :pos pos)
-                    :rotation-axis t
+                    :use-gripper t
+                    :rotation-axis :z
                     :debug-view :no-message)
             (format t "success to solve ik in right arm~%")
             (setq rarm-bool nil))

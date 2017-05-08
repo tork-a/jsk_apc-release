@@ -8,7 +8,7 @@
 
 (defclass jsk_2016_01_baxter_apc::baxter-robot
   :super baxter-robot
-  :slots (_view-hand-pos))
+  :slots (_view-hand-pos _ik-prepared-poses))
 (defmethod jsk_2016_01_baxter_apc::baxter-robot
   (:init
     (&rest args)
@@ -36,7 +36,15 @@
     (sethash :k (gethash :rarm _view-hand-pos) #f(780.791 -15.733 137.103))
     (sethash :l (gethash :rarm _view-hand-pos) #f(811.875 -180 156.184))
     ;; pos of :c, :f, :i, :l is not symmetrical to :a, :d, :g, :j because torso can't see
+    ;; initialize _ik-prepared-poses
+    (setq _ik-prepared-poses (list :untuck-pose))
     )
+  (:set-ik-prepared-poses
+    (poses)
+    (if (listp poses)
+      (setq _ik-prepared-poses poses))
+    )
+  (:ik-prepared-poses () _ik-prepared-poses)
   (:inverse-kinematics
     (target-coords
       &rest args
@@ -119,4 +127,35 @@
       (objects (append robots coords-list))
       )
     )
+  (:view-opposite-hand-pose
+    (arm &key (dy 300))
+    (let (opposite-arm gripper-coords theta)
+      (setq opposite-arm (if (eq arm :larm) :rarm :larm))
+      (setq gripper-coords
+            (send (send self opposite-arm :end-coords)
+                  :copy-worldcoords))
+      (send gripper-coords :orient 0 :z :world)
+      (if (eq arm :larm)
+        (setq theta -1.57)
+        (progn
+          (setq dy (- dy))
+          (setq theta 1.57)))
+      (send gripper-coords :translate (float-vector 0 dy -200))
+      (send gripper-coords :rotate theta :z :world)
+      (send self :rotate-gripper arm 70 :relative nil)
+      (send self arm
+            :inverse-kinematics gripper-coords
+            :use-gripper nil
+            :rotation-axis t
+            :revert-if-fail nil)))
+  (:get-support-arm-coords
+    (arm &key (dx 0) (dy 0) (dz 0))
+    (let (support-arm-coords)
+      (setq support-arm-coords
+            (send (send self arm :end-coords)
+                  :copy-worldcoords))
+      (send support-arm-coords :orient 0 :z :world)
+      (send support-arm-coords :rotate 3.14 :y :world)
+      (send support-arm-coords :translate (float-vector dx dy dz) :world)
+      support-arm-coords))
   )

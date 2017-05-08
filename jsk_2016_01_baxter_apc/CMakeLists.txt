@@ -10,7 +10,10 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     std_msgs
     baxter_core_msgs
-    message_generation
+    hardware_interface
+    transmission_interface
+    controller_manager
+    dynamixel_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -20,7 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-#catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -54,10 +57,11 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-add_service_files(
-  FILES
-  UpdateTarget.srv
-)
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -67,10 +71,10 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs  # Or other packages containing msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -104,7 +108,15 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES jsk_apc2016_common
-  CATKIN_DEPENDS control_msgs roscpp std_msgs baxter_core_msgs
+  CATKIN_DEPENDS
+  control_msgs
+  roscpp
+  std_msgs
+  baxter_core_msgs
+  hardware_interface
+  transmission_interface
+  controller_manager
+  dynamixel_msgs
 #  DEPENDS system_lib
 )
 
@@ -115,6 +127,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
+  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -148,11 +161,32 @@ add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.urdf
           ${PROJECT_SOURCE_DIR}/robots/right_vacuum_gripper.xacro
           ${PROJECT_SOURCE_DIR}/robots/left_vacuum_gripper.xacro
           ${PROJECT_SOURCE_DIR}/robots/softkinetic_camera/senz3d.urdf.xacro)
+## -------------------
+## baxterrgv5.l generation
+## -------------------
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.l
+  COMMAND rosrun euscollada collada2eus baxterrgv5.dae baxterrgv5.yaml baxterrgv5.l
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.dae ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.yaml)
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.dae
+  COMMAND rosrun collada_urdf urdf_to_collada baxterrgv5.urdf baxterrgv5.dae
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.urdf)
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.urdf
+  COMMAND ROS_PACKAGE_PATH=${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH} rosrun xacro xacro baxterrgv5.xacro > baxterrgv5.urdf
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
+  DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.xacro
+          ${PROJECT_SOURCE_DIR}/robots/right_arm_camera.xacro
+          ${PROJECT_SOURCE_DIR}/robots/left_arm_camera.xacro
+          ${PROJECT_SOURCE_DIR}/robots/right_vacuum_gripper_v5.xacro
+          ${PROJECT_SOURCE_DIR}/robots/left_vacuum_gripper.xacro
+          ${PROJECT_SOURCE_DIR}/robots/softkinetic_camera/senz3d.urdf.xacro)
 # get collada-dom version
 find_package(PkgConfig)
 pkg_check_modules(COLLADA collada-dom>=2.4.4)
 if(${COLLADA_FOUND})
   add_custom_target(generate_baxter_lisp ALL DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.l)
+  add_custom_target(generate_baxterrgv5_lisp ALL DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxterrgv5.l)
 else()
   pkg_check_modules(COLLADA collada-dom)
   message(WARNING "urdf_to_collada requries collada-dom >= 2.4.4, installed version is ${COLLADA_VERSION}")
@@ -162,16 +196,19 @@ endif()
 add_executable(gripper_joint_states_publisher src/gripper_joint_states_publisher.cpp)
 add_executable(gripper_trajectory_server src/gripper_trajectory_server.cpp)
 add_executable(enable_gripper src/enable_gripper.cpp)
+add_executable(gripper_v5_ros_control_node src/gripper_v5_ros_control.cpp)
 
 ## Add cmake target dependencies of the executable
 add_dependencies(gripper_joint_states_publisher ${catkin_EXPORTED_TARGETS})
 add_dependencies(gripper_trajectory_server ${catkin_EXPORTED_TARGETS})
 add_dependencies(enable_gripper ${catkin_EXPORTED_TARGETS})
+add_dependencies(gripper_v5_ros_control_node ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(gripper_joint_states_publisher ${catkin_LIBRARIES})
 target_link_libraries(gripper_trajectory_server ${catkin_LIBRARIES})
 target_link_libraries(enable_gripper ${catkin_LIBRARIES})
+target_link_libraries(gripper_v5_ros_control_node ${catkin_LIBRARIES})
 
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/worlds/pick_kiva.world
   DEPENDS ${PROJECT_SOURCE_DIR}/worlds/pick_kiva.world.erb
@@ -245,23 +282,15 @@ if(CATKIN_ENABLE_TESTING)
   if(TARGET tests)
     add_dependencies(tests download_test_data)
   endif()
-  # add_rostest(test/test_move_arm_to_bin.test)
+  add_rostest(test/test_move_arm_to_bin.test)
   add_rostest(test/test_ik_in_bin.test)
   add_rostest(test/test_ik_in_tote.test)
   add_rostest(test/test_again_approach_bin_l.test)
   find_package(roslaunch REQUIRED)
   roslaunch_add_file_check(launch/include/vacuum_gripper.launch)
   find_package(jsk_tools REQUIRED)
-  file(GLOB_RECURSE _eus_files euslisp/*.l)
-  file(GLOB_RECURSE _eus_test_files test/*.l)
-  foreach(_eus_file IN LISTS _eus_files)
-    if(${jsk_tools_VERSION} VERSION_GREATER 2.0.13)
-      jsk_tools_add_shell_test(COMMAND "rosrun jsk_2016_01_baxter_apc euslint ${_eus_file}")
-    endif()
-  endforeach()
-  foreach(_eus_test_file IN LISTS _eus_test_files)
-    if(${jsk_tools_VERSION} VERSION_GREATER 2.0.13)
-      jsk_tools_add_shell_test(COMMAND "rosrun jsk_2016_01_baxter_apc euslint ${_eus_test_file}")
-    endif()
-  endforeach()
+  if(${jsk_tools_VERSION} VERSION_GREATER 2.0.13)
+    jsk_tools_add_shell_test(COMMAND "rosrun jsk_2016_01_baxter_apc euslint ${PROJECT_SOURCE_DIR}/euslisp")
+    jsk_tools_add_shell_test(COMMAND "rosrun jsk_2016_01_baxter_apc euslint ${PROJECT_SOURCE_DIR}/test")
+  endif()
 endif()
