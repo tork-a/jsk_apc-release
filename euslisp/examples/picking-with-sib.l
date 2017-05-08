@@ -18,7 +18,7 @@
 
 
 (defun place-object ()
-  (send *ri* :move-arm-body->order-bin *arm*)
+  (send *ri* :move-arm-body->order-bin *arm* :no-gripper-controller)
   (send *ri* :gripper-servo-off *arm*)  ;; power off gripper servo not to overload it
   (send *ri* :wait-interpolation)
   (send *ri* :stop-grasp *arm*)
@@ -32,10 +32,48 @@
 
 
 (defun solidity-main ()
-  (ros::set-param
-    (format nil "~a_hand/target_bin"
-            (send *ri* :arm-symbol2str *arm*))
-    (symbol2str *bin*))
+  ;; set target
+  (let ((bins (list :a :b :c :d :e :f :g :h :i :j :k :l))
+        (label-names (ros::get-param (format nil "/~a_hand_camera/label_names" (arm2str *arm*))))
+        order target-obj bin-contents)
+    (setq order (send *ri* :get-certain-work-order *arm* *bin*))
+    (if (null order)
+      (progn
+        ;; work order of *bin* doesn't exist
+        (ros::ros-warn "[solidity-main] could not find work order of ~a" *bin*)
+        (return-from solidity-main nil)
+        )
+      (progn
+        (ros::ros-warn "work-order: ~a" order)
+        ;; get target param
+        (setq target-obj (send order :object))
+        (setq bin-contents (send *ri* :get-bin-contents *bin*))
+        (ros::set-dynparam
+          (format nil "/~a_hand_camera/bbox_array_to_bbox" (arm2str *arm*))
+          (cons "index" (position *bin* bins)))
+        (ros::set-dynparam
+          (format nil "/~a_hand_camera/label_to_mask" (arm2str *arm*))
+          (cons "label_value" (position target-obj label-names :test #'string=)))
+        (send *ri* :set-object-segmentation-candidates
+              :arm *arm*
+              :candidates (mapcar #'(lambda (x) (position x label-names :test #'string=))
+                                  (append (list "background") bin-contents)))
+        (if (send *ri* :check-bin-exist *bin*)
+          (progn
+            (ros::set-param
+              (format nil "~a_hand/target_bin" (arm2str *arm*))
+              (symbol2str *bin*))
+            ;; logging
+            (ros::ros-info-blue "[solidity-main] target-bin: ~a, target-obj: ~a" *bin* target-obj)
+            )
+          (progn
+            (ros::ros-warn "[solidity-main] could not find bin box: ~a" *bin*)
+            (return-from solidity-main nil)
+            )
+          )
+        )
+      )
+    )
 
   (cond ((not *use-kinect*)
          (send *ri* :move-arm-body->bin-overlook-pose *arm* *bin*)
@@ -57,11 +95,11 @@
   (send *ri* :pick-object *arm* *bin* :n-trial 1 :n-trial-same-pos 1)
 
   (send *baxter* :avoid-shelf-pose *arm* *bin*)
-  (send *ri* :send-av 3000)
+  (send *ri* :send-av 3000 :no-gripper-controller)
   (send *ri* :wait-interpolation)
 
   (send *baxter* :fold-to-keep-object *arm*)
-  (send *ri* :send-av 3000)
+  (send *ri* :send-av 3000 :no-gripper-controller)
   (send *ri* :wait-interpolation)
 
   (place-object)
