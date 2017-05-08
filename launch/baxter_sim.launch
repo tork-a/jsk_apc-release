@@ -1,17 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- COPY FROM jsk_2015_05_baxter_apc/launch/baxter_sim.launch -->
 <launch>
-
-  <param name="/apc_on_gazebo" type="bool" value="true" />
-
-  <!-- these are the arguments you can pass this launch file, for example paused:=true -->
-  <arg name="world_name" default="$(find jsk_2015_05_baxter_apc)/worlds/empty_kiva.world"/>
+  <arg name="world_name" default="$(find baxter_gazebo)/worlds/baxter.world"/>
   <arg name="paused" default="false"/>
   <arg name="use_sim_time" default="true"/>
   <arg name="gui" default="true"/>
   <arg name="headless" default="false"/>
   <arg name="debug" default="false"/>
   <arg name="shelf_model_path" default="$(find jsk_apc2015_common)"/>
+
+  <param name="/apc_on_gazebo" type="bool" value="true" />
 
   <!-- We resume the logic in empty_world.launch, changing the name of the world to be launched -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -33,16 +29,6 @@
 
   <!-- Publish a static transform between the world and the base of the robot -->
   <node pkg="tf" type="static_transform_publisher" name="base_to_world" args="0 0 0 0 0 0 world base 100" />
-
-  <!-- tf for end effector which is required by gazebo plugin for vacuum_gripper -->
-  <!--
-  <node name="left_vacuum_gripper_tf_publisher"
-        pkg="tf2_ros" type="static_transform_publisher"
-        args="0.07 0 0.45 0 0 0 left_wrist left_end_effector" />
-  <node name="right_vacuum_gripper_tf_publisher"
-        pkg="tf2_ros" type="static_transform_publisher"
-        args="0.07 0 0.45 0 0 0 right_wrist right_end_effector" />
-   -->
 
   <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
@@ -88,13 +74,6 @@
     <arg name="grav_left_name" value="left_gripper_base" />
     <arg name="right_tip_name" value="right_gripper_base" />
     <arg name="left_tip_name" value="left_gripper_base" />
-    <!-- FIXME: gripper_vacuum_pad_base cannot be loaded to gazebo -->
-    <!--
-    <arg name="grav_right_name" value="right_gripper_vacuum_pad_base" />
-    <arg name="grav_left_name" value="left_gripper_vacuum_pad_base" />
-    <arg name="right_tip_name" value="right_gripper_vacuum_pad_base" />
-    <arg name="left_tip_name" value="left_gripper_vacuum_pad_base" />
-    -->
   </include>
 
   <!-- kiva pod state tf and urdf param -->
@@ -108,5 +87,8 @@
   <node name="initialize_baxter"
         pkg="jsk_2015_05_baxter_apc" type="initialize_baxter.py"
         output="screen" />
+
+  <node name="gripper_trajectory_server"
+        pkg="jsk_2016_01_baxter_apc" type="gripper_trajectory_server" output="screen" />
 
 </launch>
