@@ -38,7 +38,7 @@
     (setq object-coords-in-bin- (make-hash-table)))
   (:tf-pose->coords
     (frame_id pose)
-    (let (base-name (send (send (send self :robot) :base_lk) :name))
+    (let ((base-name (send (send (send self :robot) :base_lk) :name)))
       (send (send tfl- :lookup-transform base-name frame_id (ros::time 0))
             :transform (ros::tf-pose->coords pose))))
   (:bbox->cube
@@ -77,10 +77,12 @@
                           (format nil "~a_hand/state"
                                   (arm2str (get-opposite-arm arm))))))
       (if (eq state :wait_for_opposite_arm_start_picking)
-        (null (eq opposite-state :pick_object))
+        (null (or (eq opposite-state :recognize_objects_in_bin)
+                  (eq opposite-state :wait_for_user_input)))
         (or (eq opposite-state :recognize_objects_in_bin)
             (eq opposite-state :pick_object)
             (eq opposite-state :verify_object)
+            (eq opposite-state :set_target_cardboard)
             (eq opposite-state :return_object)))))
   (:get-work-orders
     (arm)
