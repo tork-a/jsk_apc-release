@@ -1,4 +1,4 @@
-From 6e969746ca91564052252a4d051fa2b8579be3b8 Mon Sep 17 00:00:00 2001
+From 6875e57610e304f095571b9fb47b10d34f608bbb Mon Sep 17 00:00:00 2001
 From: Kei Okada <kei.okada@gmail.com>
 Date: Fri, 24 Jun 2016 11:40:54 +0900
 Subject: [PATCH] uncomment pip installed packges
@@ -8,7 +8,7 @@ Subject: [PATCH] uncomment pip installed packges
  1 file changed, 1 deletion(-)
 
 diff --git a/package.xml b/package.xml
-index 5476999..8132f35 100644
+index 583c1be..82f93a3 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -57,7 +57,6 @@
@@ -20,5 +20,5 @@ index 5476999..8132f35 100644
    <test_depend>roslint</test_depend>
    <test_depend>jsk_tools</test_depend>
 -- 
-2.13.0
+1.9.1
 
