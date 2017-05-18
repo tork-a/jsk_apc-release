@@ -2,15 +2,9 @@
 Changelog for package jsk_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-1.5.0 (2016-07-09)
+3.0.2 (2017-05-18)
 ------------------
-
-1.0.0 (2016-07-08)
-------------------
-
-0.8.1 (2016-06-24)
-------------------
-* Update CHANGELOG.rst for 0.8.0
+* Put in order tags in CHANGELOG.rst
 * Contributors: Kentaro Wada
 
 3.0.1 (2017-05-16)
@@ -37,6 +31,17 @@ Changelog for package jsk_apc
 * 0.8.1
 * Update CHANGELOG.rst for 0.8.0
 * Contributors: Kei Okada, Kentaro Wada
+
+1.5.0 (2016-07-09)
+------------------
+
+1.0.0 (2016-07-08)
+------------------
+
+0.8.1 (2016-06-24)
+------------------
+* Update CHANGELOG.rst for 0.8.0
+* Contributors: Kentaro Wada
 
 0.8.0 (2016-05-31)
 ------------------
