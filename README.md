@@ -26,7 +26,11 @@ Build Status
 Usage
 -----
 
-See [jsk_2015_05_baxter_apc](http://jsk-apc.readthedocs.org/en/latest/jsk_2015_05_baxter_apc/index.html).
+| Competition | Documentation                                                                                             |
+|:------------|:----------------------------------------------------------------------------------------------------------|
+| APC2015     | See [jsk_2015_05_baxter_apc](http://jsk-apc.readthedocs.org/en/latest/jsk_2015_05_baxter_apc/index.html). |
+| APC2016     | See [jsk_2016_01_baxter_apc](http://jsk-apc.readthedocs.org/en/latest/jsk_2016_01_baxter_apc/index.html). |
+| ARC2017     | See [jsk_arc2017_baxter](http://jsk-apc.readthedocs.org/en/latest/jsk_arc2017_baxter/index.html).         | 
 
 
 Citations
@@ -95,24 +99,13 @@ Please follow [Instructions at code-iai/iai\_kinect2](https://github.com/code-ia
 however, maybe you have error with the master branch. In that case, please use
 [this rosinstall](https://github.com/start-jsk/jsk_apc/blob/master/kinect2.rosinstall).
 
-**Setup rosserial + vacuum gripper**
+**Setup Arduino and DXHUB**
 
-Write below in `/etc/udev/rules.d/90-rosserial.rules`:
-
+Create udev rules:
 ```
-# ATTR{product}=="rosserial"
-SUBSYSTEM=="tty", MODE="0666"
+$ rosrun jsk_arc2017_baxter create_udev_rules
 ```
-
-**Setup DXHUB + gripper-v5(and later)**
-
-Write below in `/etc/udev/rules.d/80-dxhub.rules`:
-
-```
-# Create symlink /dev/r_dxhub
-# For now, connection to only one DXHUB is supported
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6015" MODE:="0666", SYMLINK+="r_dxhub"
-```
+so that Arduinos can appear on `/dev/arduino*` and DXHUB can appear on `/dev/r_dxhub`
 
 **Setup SSH**
 
@@ -122,15 +115,4 @@ Write below in `~/.ssh/config`:
 Host baxter
   HostName baxter.jsk.imi.i.u-tokyo.ac.jp
   User ruser  # password: rethink
-```
-
-**Setup Softkinetic Camera**
-
-See [here](http://jsk-recognition.readthedocs.org/en/latest/install_softkinetic_camera.html) for almost all install process,
-but for installing ROS package please do like below:
-
-```bash
-git clone https://github.com/knorth55/softkinetic.git -b jsk_apc
-cd softkinetic/softkinetic_camera
-catkin bt -iv
 ```
