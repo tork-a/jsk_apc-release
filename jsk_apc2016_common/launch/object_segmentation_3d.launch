@@ -9,8 +9,9 @@
   <arg name="MODEL_NAME" default="fcn32s" />
   <arg name="MODEL_FILE" default="$(find jsk_apc2016_common)/trained_data/fcn32s_v2_148000.chainermodel"/>
   <arg name="LABEL_YAML" default="$(find jsk_apc2016_common)/config/label_names.yaml"/>
+  <arg name="SELECT_LARGEST" default="false" />
 
-  <rosparam command="load" file="$(arg LABEL_YAML)" />
+  <rosparam command="load" file="$(arg LABEL_YAML)" ns="label_names" />
 
   <node name="fcn_object_segmentation"
         pkg="jsk_perception" type="fcn_object_segmentation.py">
@@ -19,6 +20,7 @@
       gpu: $(arg GPU)
       backend: $(arg BACKEND)
       model_name: $(arg MODEL_NAME)
+      model_h5: $(arg MODEL_FILE)
       model_file: $(arg MODEL_FILE)
     </rosparam>
     <remap from="~target_names" to="label_names" />
@@ -27,6 +29,29 @@
         pkg="jsk_perception" type="apply_context_to_label_probability">
     <remap from="~input" to="fcn_object_segmentation/output/proba_image" />
   </node>
+
+  <!-- label -> cluster indices -->
+  <group if="$(arg SELECT_LARGEST)">
+    <node name="label_to_cluster_indices"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl_utils/LabelToClusterPointIndices $(arg NODELET_MANAGER)">
+      <remap from="~input" to="apply_context_to_label_proba/output/label" />
+      <rosparam>
+        bg_label: 0
+      </rosparam>
+    </node>
+    <node name="cluster_indices_decomposer_label"
+          pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg NODELET_MANAGER)">
+      <remap from="~input" to="$(arg INPUT_CLOUD)" />
+      <remap from="~target" to="label_to_cluster_indices/output" />
+      <rosparam>
+        approximate_sync: true
+        queue_size: 100
+        sort_by: -cloud_size
+      </rosparam>
+    </node>
+  </group>
 
   <!-- label -> mask -> indices -> cloud -> resized cloud  -> cluster indices -->
   <node name="label_to_mask"
@@ -84,22 +109,15 @@
   </node>
 
   <!-- Visualization -->
-  <node name="overlay_target_label"
-        pkg="jsk_apc2016_common" type="overlay_target_label"
-        respawn="true">
+  <node name="label_image_decomposer"
+        pkg="jsk_perception" type="label_image_decomposer.py">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input/label" to="apply_context_to_label_proba/output/label" />
     <remap from="~label_names" to="label_names" />
-    <remap from="~target_label" to="label_to_mask/label_value" />
-  </node>
-  <node name="colorize_labels"
-        pkg="nodelet" type="nodelet"
-        args="load jsk_perception/ColorizeLabels $(arg NODELET_MANAGER)">
-    <remap from="~input" to="apply_context_to_label_proba/output/label" />  <!-- rgb timestamp -->
-  </node>
-  <node name="overlay_image_color_on_mono"
-        pkg="nodelet" type="nodelet"
-        args="load jsk_perception/OverlayImageColorOnMono $(arg NODELET_MANAGER)">
-    <remap from="~input/color" to="colorize_labels/output" />
-    <remap from="~input/mono" to="$(arg INPUT_IMAGE)" />
+    <rosparam>
+      approximate_sync: true
+      queue_size: 100
+    </rosparam>
   </node>
 
 </launch>
