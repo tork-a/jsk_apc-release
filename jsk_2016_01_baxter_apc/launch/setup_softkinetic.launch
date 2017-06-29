@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<!--
+     require https://github.com/knorth55/softkinetic/tree/jsk_apc.git
+-->
+<launch>
+
+  <arg name="NODELET_MANAGER_RIGHT" value="right_softkinetic_camera_manager" />
+  <arg name="NODELET_MANAGER_LEFT" value="left_softkinetic_camera_manager" />
+  <arg name="NODELET_ID_0" value="nodelets_0" />
+  <arg name="NODELET_ID_1" value="nodelets_1" />
+  <arg name="use_stow" default="false" />
+
+  <!--right hand softkinetic -->
+  <node name="right_softkinetic_camera" pkg="softkinetic_camera" type="softkinetic_bringup_node" output="screen" respawn="true">
+    <rosparam>
+      camera_link: right_softkinetic_camera_link
+      rgb_optical_frame: right_softkinetic_camera_rgb_optical_frame
+      depth_optical_frame: right_softkinetic_camera_depth_optical_frame
+      confidence_threshold: 200
+      depth_mode: close                 # close or long
+      depth_frame_format: QVGA          # QVGA
+      depth_frame_rate: 30              # 25, 30, 50, 60
+      color_compression: MJPEG          # YUY2, MJPEG
+      color_frame_format: VGA           # QQVGA, QVGA, VGA, WXGA_H, NHD
+      color_frame_rate: 30              # 25, 30
+      <!-- to get organized point cloud -->
+      use_frustum_culling_filter: false
+      use_passthrough_filter: false
+      use_radius_outlier_filter: false
+      use_voxel_grid_filter: false
+      <!-- identify device by serial number -->
+      use_serial: true
+      serial: 137DS32528260700377
+    </rosparam>
+    <!-- load calibration file -->
+    <param name="rgb_calibration_file" type="string" value="$(find jsk_2016_01_baxter_apc)/data/softkinetic/137DS32528260700377/calib_color.yaml" />
+    <param name="depth_calibration_file" type="string" value="$(find jsk_2016_01_baxter_apc)/data/softkinetic/137DS32528260700377/calib_depth.yaml" />
+  </node>
+
+  <!-- left hand softkinetic -->
+  <node name="left_softkinetic_camera" pkg="softkinetic_camera" type="softkinetic_bringup_node" output="screen" respawn="true">
+    <rosparam>
+      camera_link: left_softkinetic_camera_link
+      rgb_optical_frame: left_softkinetic_camera_rgb_optical_frame
+      depth_optical_frame: left_softkinetic_camera_depth_optical_frame
+      confidence_threshold: 200
+      depth_mode: close                 # close or long
+      depth_frame_format: QVGA          # QVGA
+      depth_frame_rate: 30              # 25, 30, 50, 60
+      color_compression: MJPEG          # YUY2, MJPEG
+      color_frame_format: VGA           # QQVGA, QVGA, VGA, WXGA_H, NHD
+      color_frame_rate: 30              # 25, 30
+      <!-- to get organized point cloud -->
+      use_frustum_culling_filter: false
+      use_passthrough_filter: false
+      use_radius_outlier_filter: false
+      use_voxel_grid_filter: false
+      <!-- identify device by serial number -->
+      use_serial: true
+      serial: 137DS32528260700380
+    </rosparam>
+    <!-- load calibration file -->
+    <param name="rgb_calibration_file" type="string" value="$(find jsk_2016_01_baxter_apc)/data/softkinetic/137DS32528260700380/calib_color.yaml" />
+    <param name="depth_calibration_file" type="string" value="$(find jsk_2016_01_baxter_apc)/data/softkinetic/137DS32528260700380/calib_depth.yaml" />
+  </node>
+
+  <node name="$(arg NODELET_MANAGER_RIGHT)"
+        pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+        respawn="true" output="screen">
+  </node>
+  <node name="$(arg NODELET_MANAGER_LEFT)"
+        pkg="jsk_topic_tools" type="standalone_complexed_nodelet"
+        respawn="true" output="screen">
+  </node>
+
+  <include file="$(find jsk_2016_01_baxter_apc)/launch/segmentation_in_bin.launch" unless="$(arg use_stow)">
+    <arg name="NODELET_MANAGER_RIGHT" value="$(arg NODELET_MANAGER_RIGHT)" />
+    <arg name="NODELET_MANAGER_LEFT" value="$(arg NODELET_MANAGER_LEFT)" />
+    <arg name="NODELET_ID_0" value="$(arg NODELET_ID_0)" />
+    <arg name="NODELET_ID_1" value="$(arg NODELET_ID_1)" />
+  </include>
+  <include file="$(find jsk_2016_01_baxter_apc)/launch/segmentation_in_tote.launch" if="$(arg use_stow)">
+    <arg name="NODELET_MANAGER_RIGHT" value="$(arg NODELET_MANAGER_RIGHT)" />
+    <arg name="NODELET_MANAGER_LEFT" value="$(arg NODELET_MANAGER_LEFT)" />
+    <arg name="NODELET_ID_0" value="$(arg NODELET_ID_0)" />
+    <arg name="NODELET_ID_1" value="$(arg NODELET_ID_1)" />
+  </include>
+
+</launch>
