@@ -1,10 +1,12 @@
 <launch>
 
-  <arg name="moveit" default="false" />
+  <arg name="moveit" default="true" />
+  <arg name="pick" default="true" doc="pick_task: true, stow_task: false" />
+  <arg name="gripper_v4_limb" default="['left']" />
 
   <!-- custom baxter params -->
   <param name="/robot_description"
-         command="$(find xacro)/xacro.py $(find jsk_2016_01_baxter_apc)/robots/baxter.xacro" />
+         command="$(find xacro)/xacro.py $(find jsk_arc2017_baxter)/robots/baxter.xacro" />
   <node name="robot_state_publisher"
         pkg="robot_state_publisher" type="robot_state_publisher">
     <remap from="joint_states" to="/robot/joint_states"/>
@@ -12,15 +14,26 @@
   <rosparam param="/baxter_joint_trajectory"
             file="$(find jsk_2015_05_baxter_apc)/config/baxter_joint_trajectory.yaml"/>
 
+  <!-- adjust gravity compensation for gripper-v6 -->
+  <node pkg="rostopic" type="rostopic" name="adjust_compensation"
+        args="pub -1 /robot/end_effector/right_gripper/command baxter_core_msgs/EndEffectorCommand
+              -f $(find jsk_arc2017_baxter)/config/right_gripper_v6/gripper_mass.yaml"
+        output="screen"/>
 
   <!-- vacuum gripper -->
-  <include file="$(find jsk_2016_01_baxter_apc)/launch/include/vacuum_gripper.launch" />
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/gripper_arduinos.launch" />
   <node name="enable_gripper"
         pkg="jsk_2016_01_baxter_apc" type="enable_gripper" output="screen" />
   <node name="gripper_joint_state_publisher"
-        pkg="jsk_2016_01_baxter_apc" type="gripper_joint_states_publisher" />
+        pkg="jsk_2016_01_baxter_apc" type="gripper_joint_states_publisher">
+    <rosparam param="limb" subst_value="True">$(arg gripper_v4_limb)</rosparam>
+  </node>
   <node name="gripper_trajectory_server"
-        pkg="jsk_2016_01_baxter_apc" type="gripper_trajectory_server" output="screen" />
+        pkg="jsk_2016_01_baxter_apc" type="gripper_trajectory_server" output="screen">
+    <rosparam param="limb" subst_value="True">$(arg gripper_v4_limb)</rosparam>
+  </node>
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/gripper_v6_dxl_controller.launch" />
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/gripper_v6_ros_control.launch" />
 
 
   <!-- baxter startup -->
@@ -42,21 +55,10 @@
   </include>
 
 
-  <!-- hand mounted camera -->
-  <include file="$(find jsk_2016_01_baxter_apc)/launch/include/astra_hand.launch" />
-
-
-  <!-- TODO: add shelf xacro for rviz visualization-->
-  <!-- <include file="$(find jsk_2015_05_baxter_apc)/launch/include/kiva_pod_state.launch" /> -->
-
-  <node name="interactive_adjust_shelf"
-        pkg="jsk_interactive_marker" type="marker_6dof">
-    <rosparam command="load" file="$(find jsk_arc2017_common)/config/shelf_interactive_marker.yaml" />
-  </node>
-  <node name="publish_bin_boxes"
-        pkg="jsk_recognition_utils" type="bounding_box_array_publisher.py">
-    <rosparam file="$(find jsk_arc2017_common)/config/shelf_bin.yaml" command="load" />
-  </node>
+  <!-- picking source location: shelf/tote -->
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/setup_source_location.xml">
+    <arg name="pick" value="$(arg pick)" />
+  </include>
 
   <node name="desktop_bg_publisher"
         pkg="jsk_perception" type="image_publisher.py">
@@ -68,6 +70,6 @@
         pkg="jsk_baxter_startup" type="xdisplay_image_topic.py"
         args="/desktop_bg_publisher/output" />
 
-  <include file="$(find jsk_2016_01_baxter_apc)/launch/include/baxter_moveit.launch" if="$(arg moveit)" />
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/baxter_moveit.launch" if="$(arg moveit)" />
 
 </launch>

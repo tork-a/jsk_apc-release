@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
 import codecs
+from collections import OrderedDict
 import json
 import os
 import os.path as osp
@@ -36,7 +36,7 @@ def _patch_img_fname(img_fname):
 
 
 def main():
-    # TODO
+    # TODO(unknown)
     # classes = []
     objects = []
     grasp_types = []
@@ -85,14 +85,15 @@ def main():
     if not osp.exists(out_dir):
         os.makedirs(out_dir)
 
-    # TODO
+    # TODO(unknown)
     # classes.txt
     with open(osp.join(out_dir, 'classes.txt'), 'w') as f:
         pass
 
     # label_names.yaml
-    with open(osp.join(out_dir, 'objects.yaml'), 'w') as f:
-        yaml.dump({'label_names': objects}, f)
+    with open(osp.join(PKG_DIR, 'config/label_names.yaml'), 'w') as f:
+        label_names = ['__background_'] + objects + ['__shelf__']
+        yaml.dump(label_names, f)
 
     # grasp_types.txt
     with open(osp.join(out_dir, 'grasp_types.txt'), 'w') as f:
