@@ -7,22 +7,15 @@ import os.path as osp
 import random
 import rospkg
 import shutil
-import yaml
+
+import jsk_arc2017_common
 
 
 PKG_DIR = rospkg.RosPack().get_path('jsk_arc2017_common')
 
 
-def load_label_list():
-    with open(osp.join(PKG_DIR, 'config', 'label_names.yaml')) as f:
-        label_names = yaml.load(f)
-    label_list = label_names['label_names']
-    label_list = label_list[1:-1]
-    return label_list
-
-
 def generate_pick_json(dirname):
-    label_list = load_label_list()
+    label_list = jsk_arc2017_common.get_object_names()[1:-1]
     box_id_list = ['A1', '1AD', '1A5', '1B2', 'K3']
     box_A_candidate = box_id_list[:2]   # box_A is for 2 items
     box_B_candidate = box_id_list[2:4]  # box_B is for 3 items
@@ -37,9 +30,9 @@ def generate_pick_json(dirname):
     bin_contents = random.sample(label_list, 32)
     target_items = random.sample(bin_contents, 10)
     random.shuffle(bin_contents)
-    bin_A_contents = bin_contents[:16]
-    bin_B_contents = bin_contents[16:24]
-    bin_C_contents = bin_contents[24:32]
+    bin_A_contents = bin_contents[:10]
+    bin_B_contents = bin_contents[10:22]
+    bin_C_contents = bin_contents[22:32]
     random.shuffle(target_items)
     box_A_contents = target_items[:2]
     box_B_contents = target_items[2:5]
@@ -100,7 +93,7 @@ def generate_pick_json(dirname):
 
     separators = (',', ': ')
     original_box_sizes_path = osp.join(PKG_DIR, 'config', 'box_sizes.json')
-    output_dir = osp.join(PKG_DIR, 'json', dirname)
+    output_dir = osp.join(PKG_DIR, 'data', 'json', dirname)
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
     else:
