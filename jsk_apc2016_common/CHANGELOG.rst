@@ -2,6 +2,11 @@
 Changelog for package jsk_apc2016_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.2.0 (2017-07-06)
+------------------
+* update candidates for segmentation via topic
+* Contributors: Shingo Kitagawa
+
 3.1.0 (2017-06-30)
 ------------------
 * update visulization methods
