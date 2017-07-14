@@ -1,4 +1,4 @@
-From 8a09ae41544c97e0ad7c22f53f07d670f8ca5e80 Mon Sep 17 00:00:00 2001
+From 6e6d59e029db0f2c3af999206633e62b487aace8 Mon Sep 17 00:00:00 2001
 From: Kentaro Wada <www.kentaro.wada@gmail.com>
 Date: Mon, 8 May 2017 17:19:18 +0900
 Subject: [PATCH] Comment out python-gdown-pip for release
@@ -8,7 +8,7 @@ Subject: [PATCH] Comment out python-gdown-pip for release
  1 file changed, 1 deletion(-)
 
 diff --git a/package.xml b/package.xml
-index 0c95dd1..b043bf1 100644
+index e8ee701..c1859d7 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -38,7 +38,6 @@
