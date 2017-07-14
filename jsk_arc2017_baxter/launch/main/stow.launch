@@ -3,6 +3,7 @@
   <arg name="json_dir" />
   <arg name="rviz" default="true" />
   <arg name="moveit" default="true" />
+  <arg name="smach_viewer" default="false" />
 
   <!-- set bin_contents rosparam -->
   <node name="set_tote_contents"
@@ -59,8 +60,7 @@
   </group>
 
   <!-- smach viewer -->
-  <!-- FIXME: Segmentation Fault occurs on sheeta -->
-  <!-- <node pkg="smach_viewer" type="smach_viewer.py" name="smach_viewer" /> -->
+  <node pkg="smach_viewer" type="smach_viewer.py" name="smach_viewer" if="$(arg smach_viewer)"/>
 
   <!-- parameter -->
   <param name="/left_hand/target_bin" value="" />
@@ -81,25 +81,25 @@
   <!-- robot main -->
   <group if ="$(arg main)">
     <node unless="$(arg moveit)" pkg="jsk_arc2017_baxter" type="stow-main.l" name="left_hand_main"
-          args="&quot;(progn (stow-init :ctype :larm-controller :moveit nil) (stow-mainloop :larm))&quot;"
+          args="&quot;(progn (stow-init :ctype :larm-head-controller :moveit nil) (stow-mainloop :larm))&quot;"
           respawn="true" output="screen">
       <env name="DISPLAY" value="" />
     </node>
 
     <node unless="$(arg moveit)" pkg="jsk_arc2017_baxter" type="stow-main.l" name="right_hand_main"
-          args="&quot;(progn (stow-init :ctype :rarm-controller :moveit nil) (stow-mainloop :rarm))&quot;"
+          args="&quot;(progn (stow-init :ctype :rarm-head-controller :moveit nil) (stow-mainloop :rarm))&quot;"
           respawn="true" output="screen">
       <env name="DISPLAY" value="" />
     </node>
 
     <node if="$(arg moveit)" pkg="jsk_arc2017_baxter" type="stow-main.l" name="left_hand_main"
-          args="&quot;(progn (stow-init :ctype :larm-controller :moveit t) (stow-mainloop :larm))&quot;"
+          args="&quot;(progn (stow-init :ctype :larm-head-controller :moveit t) (stow-mainloop :larm))&quot;"
           respawn="true" output="screen">
       <env name="DISPLAY" value="" />
     </node>
 
     <node if="$(arg moveit)" pkg="jsk_arc2017_baxter" type="stow-main.l" name="right_hand_main"
-          args="&quot;(progn (stow-init :ctype :rarm-controller :moveit t) (stow-mainloop :rarm))&quot;"
+          args="&quot;(progn (stow-init :ctype :rarm-head-controller :moveit t) (stow-mainloop :rarm))&quot;"
           respawn="true" output="screen">
       <env name="DISPLAY" value="" />
     </node>

@@ -6,6 +6,21 @@
     local-name: jsk-ros-pkg/jsk_recognition
     uri: https://github.com/jsk-ros-pkg/jsk_recognition.git
     version: jsk_apc
+# jsk_visualization needs below:
+# https://github.com/jsk-ros-pkg/jsk_visualization/pull/670
+- git:
+    local-name: jsk-ros-pkg/jsk_visualization
+    uri: https://github.com/jsk-ros-pkg/jsk_visualization.git
+    version: master
+# jsk_pr2eus needs belows:
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/306
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/308
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/309
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/310
+- git:
+    local-name: jsk-ros-pkg/jsk_pr2eus
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus.git
+    version: master
 - git:
     local-name: FOR_ASTRA/openni2_camera
     uri: https://github.com/ros-drivers/openni2_camera.git
@@ -50,3 +65,7 @@
     local-name: FA-I-sensor/force_proximity_ros
     uri: https://github.com/knorth55/FA-I-sensor.git
     version: jsk_apc
+- git:
+    local-name: PointCloudLibrary/pcl
+    uri: https://github.com/PointCloudLibrary/pcl.git
+    version: pcl-1.8.0rc2
