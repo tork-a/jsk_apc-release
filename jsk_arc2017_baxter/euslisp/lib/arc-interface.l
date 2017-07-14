@@ -30,16 +30,6 @@
     (setq object-boxes- (make-hash-table))
     (setq object-coords- (make-hash-table))
     (setq cardboard-cubes- (make-hash-table))
-    (setq upper-cardboard-cube (make-cube 400 800 200))
-    (send upper-cardboard-cube :newcoords
-          (make-coords :pos (float-vector 1200 0 550)
-                       :rpy (float-vector 0 (/ -pi/2 2) 0)))
-    (setq lower-cardboard-cube (make-cube 400 800 200))
-    (send lower-cardboard-cube :newcoords
-          (make-coords :pos (float-vector 1200 0 165)
-                       :rpy (float-vector 0 (/ -pi/2 2) 0)))
-    (sethash :upper cardboard-cubes- upper-cardboard-cube)
-    (sethash :lower cardboard-cubes- lower-cardboard-cube)
     (setq tote-cubes- (make-hash-table))
     (setq tote-movable-regions- (make-hash-table)))
   (:fold-pose-back
@@ -112,7 +102,7 @@
   (:check-bin-exist (bin) (if (gethash bin bin-cubes-) t nil))
   (:recognize-bin-boxes
     (&key (stamp (ros::time-now)))
-    (let ((box-topic (format nil "publish_bin_boxes/output"))
+    (let ((box-topic (format nil "transformable_bin_markers/output/boxes"))
           box-msg bin-list)
       (setq box-msg (one-shot-subscribe box-topic
                                         jsk_recognition_msgs::BoundingBoxArray
@@ -127,9 +117,26 @@
             (sethash bin bin-cubes- (send self :bbox->cube (car box-list)))
             (setq box-list (cdr box-list))))
         (ros::ros-fatal "[:recognize-bin-boxes] cannot recognize bin boxes"))))
+  (:recognize-cardboard-boxes
+    (&key (stamp (ros::time-now)))
+    (let ((box-topic (format nil "transformable_cardboard_markers/output/boxes"))
+          box-msg cardboard-list)
+      (setq box-msg (one-shot-subscribe box-topic
+                                        jsk_recognition_msgs::BoundingBoxArray
+                                        :timeout 10000
+                                        :after-stamp stamp))
+      (if box-msg
+        (progn
+          (ros::ros-info "[~a] [:recognize-cardboard-boxes] recognize cardboard boxes" (ros::get-name))
+          (setq box-list (send box-msg :boxes))
+          (setq cardboard-list (list :a :b :c))
+          (dolist (cardboard cardboard-list)
+            (sethash cardboard cardboard-cubes- (send self :bbox->cube (car box-list)))
+            (setq box-list (cdr box-list))))
+        (ros::ros-fatal "[:recognize-cardboard-boxes] cannot recognize cardboard boxes"))))
   (:recognize-tote-boxes
     (&key (stamp (ros::time-now)))
-    (let ((box-topic (format nil "publish_tote_boxes/output"))
+    (let ((box-topic (format nil "transformable_tote_markers/output/boxes"))
                      box-msg box-list)
       (setq box-msg (one-shot-subscribe box-topic
                                         jsk_recognition_msgs::BoundingBoxArray
@@ -155,7 +162,7 @@
       (cond
         ((eq box-type :bin) (setq box-cubes bin-cubes- box-color :blue))
         ((eq box-type :tote) (setq box-cubes tote-cubes- box-color :red))
-        ((eq box-type :cardboard) (ros::ros-error "Not implemented box-type: :cardboard"))
+        ((eq box-type :cardboard) (setq box-cubes cardboard-cubes- box-color :yellow))
         (t (ros::ros-error "Unsupported box-type ~a" box-type))
         )
       (dolist (box-inside (send box-cubes :list-values))
@@ -222,15 +229,16 @@
                                         jsk_recognition_msgs::BoundingBoxArray
                                         :timeout 10000
                                         :after-stamp stamp))
-      (dolist (box (send box-msg :boxes))
-        (when box
-          (let (volume)
-            (setq volume (* (send box :dimensions :x)
-                            (send box :dimensions :y)
-                            (send box :dimensions :z)))
-            (if (> bbox-volume-threshold- volume)
-              (return-from :get-largest-object-index
-                           (+ (send box :label) 1))))))
+      (when box-msg
+        (dolist (box (send box-msg :boxes))
+          (when box
+            (let (volume)
+              (setq volume (* (send box :dimensions :x)
+                              (send box :dimensions :y)
+                              (send box :dimensions :z)))
+              (if (> bbox-volume-threshold- volume)
+                (return-from :get-largest-object-index
+                             (send box :label)))))))
       nil))
   (:move-fingers-pinch->init
     (arm)
@@ -259,67 +267,62 @@
   (:pick-object-with-movable-region
     (arm movable-region &key (n-trial 1) (n-trial-same-pos 1)
          (do-stop-grasp nil) (grasp-style :suction))
+    (send *ri* :calib-proximity-threshold arm)
     (let (graspingp avs object-index obj-pos obj-cube pinch-yaw)
       ;; TODO: object-index is set randomly
       (setq object-index (random (length (gethash arm object-boxes-))))
       (setq obj-pos
             (send self :get-object-position arm movable-region :object-index object-index))
       (setq obj-cube (send self :bbox->cube (elt (gethash arm object-boxes-) object-index)))
-      (if (> (x-of-cube obj-cube) (y-of-cube obj-cube)) (setq pinch-yaw pi/2) (setq pinch-yaw 0))
+      (if (> (x-of-cube obj-cube) (y-of-cube obj-cube))
+        (setq pinch-yaw
+              (+ (if (eq arm :rarm) pi/2 -pi/2)
+                 (caar (send (send obj-cube :worldcoords) :rpy-angle))))
+        (setq pinch-yaw (caar (send (send obj-cube :worldcoords) :rpy-angle))))
       (ros::ros-info "[:pick-object-with-movable-region] arm:~a approach to the object" arm)
       (send *ri* :gripper-servo-on arm)
       ;; Setup arm for picking
-      (if (eq arm :larm)
-        (progn
-          (send *ri* :angle-vector-raw
+      (let (prev-av next-av gripper-x)
+        (setq prev-av (send *baxter* :angle-vector))
+        (if (eq grasp-style :suction)
+          (setq next-av
                 (send *baxter* arm :inverse-kinematics
                       (make-coords :pos (v+ obj-pos #f(0 0 150))
                                    :rpy #f(0 0 0))
                       :use-gripper t
-                      :rotation-axis :z)
-                :fast (send *ri* :get-arm-controller arm) 0 :scale 5.0)
-          (send *ri* :wait-interpolation))
-        (let (prev-av next-av gripper-x)
-          (setq prev-av (send *baxter* :angle-vector))
-          (if (eq grasp-style :suction)
+                      :rotation-axis :z
+                      :stop 200
+                      :additional-check
+                      #'(lambda ()
+                          (and
+                            (< (send *baxter* arm :gripper-x :joint-angle) 110)
+                            (< -30 (send *baxter* arm :gripper-p :joint-angle) 30)))))
+          (progn
+            (send *baxter* :rotate-gripper arm 0 :relative nil)
+            (send *baxter* :slide-gripper arm 60 :relative nil)
             (setq next-av
                   (send *baxter* arm :inverse-kinematics
-                        (make-coords :pos (v+ obj-pos #f(0 0 150))
-                                     :rpy #f(0 0 0))
-                        :use-gripper t
-                        :rotation-axis :z
-                        :stop 200
-                        :additional-check
-                        #'(lambda ()
-                            (and
-                              (< (send *baxter* arm :gripper-x :joint-angle) 110)
-                              (< -30 (send *baxter* arm :gripper-p :joint-angle) 30)))))
-            (progn
-              (send *baxter* :rotate-gripper :rarm 0 :relative nil)
-              (send *baxter* :slide-gripper :rarm 60 :relative nil)
-              (setq next-av
-                    (send *baxter* arm :inverse-kinematics
-                          (make-coords :pos (v+ obj-pos #f(0 0 200))
-                                       :rpy (float-vector pinch-yaw 0 0))
-                          :move-palm-end t
-                          :rotation-axis t))))
-          (setq gripper-x (send *baxter* arm :gripper-x :joint-angle))
-          (send *baxter* :angle-vector prev-av)
-          ;; First, move prismatic joint to target position
-          (send *ri* :angle-vector-raw
-                (send *baxter* :slide-gripper arm gripper-x :relative nil)
-                :fast (send *ri* :get-arm-controller arm) 0 :scale 5.0)
-          (send *ri* :wait-interpolation)
-          ;; Fold fingers to avoid collision
-          (send *ri* :move-hand arm
-                (send *baxter* :hand-grasp-pre-pose arm :cylindrical) 1000)
-          (send *ri* :move-hand arm
-                (send *baxter* :hand-grasp-pose arm :cylindrical :angle 110) 1000)
-          ;; Move whole arm to target pose
-          (send *ri* :angle-vector-raw
-                (send *baxter* :angle-vector next-av)
-                :fast (send *ri* :get-arm-controller arm) 0 :scale 5.0)
-          (send *ri* :wait-interpolation)))
+                        (make-coords :pos (v+ obj-pos #f(0 0 200))
+                                     :rpy (float-vector pinch-yaw 0 0))
+                        :move-palm-end t
+                        :rotation-axis t))))
+        (setq gripper-x (send *baxter* arm :gripper-x :joint-angle))
+        (send *baxter* :angle-vector prev-av)
+        ;; First, move prismatic joint to target position
+        (send *ri* :angle-vector-raw
+              (send *baxter* :slide-gripper arm gripper-x :relative nil)
+              :fast (send *ri* :get-arm-controller arm) 0 :scale 5.0)
+        (send *ri* :wait-interpolation)
+        ;; Fold fingers to avoid collision
+        (send *ri* :move-hand arm
+              (send *baxter* :hand-grasp-pre-pose arm :cylindrical) 1000)
+        (send *ri* :move-hand arm
+              (send *baxter* :hand-grasp-pose arm :cylindrical :angle 110) 1000)
+        ;; Move whole arm to target pose
+        (send *ri* :angle-vector-raw
+              (send *baxter* :angle-vector next-av)
+              :fast (send *ri* :get-arm-controller arm) 0 :scale 5.0)
+        (send *ri* :wait-interpolation))
       (dotimes (i n-trial)
         (dotimes (j n-trial-same-pos)
           (unless graspingp
@@ -333,7 +336,7 @@
           (send *ri* :stop-grasp arm)
           (if (eq grasp-style :pinch)
             (send self :move-fingers-pinch->init arm))))
-      (if (and (eq grasp-style :suction) (eq arm :rarm))
+      (if (eq grasp-style :suction)
         ;; Move underactuated fingers to initial pose
         (send *ri* :move-hand arm
               (send *baxter* :hand-grasp-pre-pose arm :opposed) 1000))
@@ -370,9 +373,7 @@
         (send self :try-to-pinch-object arm obj-pos pinch-yaw :offset offset)))
   (:try-to-suction-object
     (arm obj-pos &key (offset #f(0 0 0)))
-    (if (eq arm :larm)
-      (send self :try-to-suction-object-with-gripper-v4 arm obj-pos :offset offset)
-      (send self :try-to-suction-object-with-gripper-v6 arm obj-pos :offset offset)))
+    (send self :try-to-suction-object-with-gripper-v6 arm obj-pos :offset offset))
   (:try-to-suction-object-with-gripper-v4
     (arm obj-pos &key (offset #f(0 0 0)))
     (let (graspingp)
@@ -396,7 +397,7 @@
                   :rotation-axis :z)
             3000 (send *ri* :get-arm-controller arm) 0)
       (send *ri* :wait-interpolation-until-grasp arm)
-      (setq graspingp (send *ri* :graspingp arm))
+      (setq graspingp (send *ri* :graspingp arm :suction))
       (ros::ros-info "[:try-to-suction-object-with-gripper-v4] arm:~a graspingp: ~a" arm graspingp)
       (unless graspingp
         (ros::ros-info "[:try-to-suction-object-with-gripper-v4] arm:~a again approach to the object" arm)
@@ -416,7 +417,7 @@
             3000 (send *ri* :get-arm-controller arm) 0)
       (send *ri* :wait-interpolation)
       (unix::sleep 1)  ;; wait for arm to follow
-      (setq graspingp (send *ri* :graspingp arm))
+      (setq graspingp (send *ri* :graspingp arm :suction))
       (ros::ros-info "[:try-to-suction-object-with-gripper-v4] arm:~a graspingp: ~a" arm graspingp)
       graspingp))
   (:try-to-suction-object-with-gripper-v6
@@ -451,7 +452,7 @@
                   :rotation-axis :z)
             3000 (send *ri* :get-arm-controller arm) 0)
       (send *ri* :wait-interpolation-until arm :grasp :prismatic-loaded)
-      (setq graspingp (send *ri* :graspingp arm))
+      (setq graspingp (send *ri* :graspingp arm :suction))
       (ros::ros-info "[:try-to-suction-object-with-gripper-v6] arm:~a graspingp: ~a" arm graspingp)
       (unless graspingp
         (ros::ros-info "[:try-to-suction-object-with-gripper-v6] arm:~a again approach to the object" arm)
@@ -474,7 +475,7 @@
             3000 (send *ri* :get-arm-controller arm) 0)
       (send *ri* :wait-interpolation)
       (unix::sleep 1)  ;; wait for arm to follow
-      (setq graspingp (send *ri* :graspingp arm))
+      (setq graspingp (send *ri* :graspingp arm :suction))
       (ros::ros-info "[:try-to-suction-object-with-gripper-v6] arm:~a graspingp: ~a" arm graspingp)
       graspingp))
   (:try-to-pinch-object
@@ -508,13 +509,13 @@
             :grasp :finger-flexion :finger-loaded :prismatic-loaded)
       (send *baxter* :angle-vector (send *ri* :state :potentio-vector :wait-until-update t))
       (send *ri* :angle-vector-raw
-            (send *baxter* :slide-gripper :rarm 120 :relative nil)
+            (send *baxter* :slide-gripper arm 120 :relative nil)
             3000 (send *ri* :get-arm-controller arm) 0)
       (send *ri* :wait-interpolation-until arm :grasp :prismatic-loaded)
       (send *baxter* :angle-vector (send *ri* :state :potentio-vector :wait-until-update t))
       (send *ri* :start-grasp arm :pinch)
       (send *baxter* :angle-vector (send *ri* :state :potentio-vector :wait-until-update t))
-      (setq graspingp (send *ri* :graspingp arm))
+      (setq graspingp (send *ri* :graspingp arm :pinch))
       (ros::ros-info "[:try-to-pinch-object] arm:~a graspingp: ~a" arm graspingp)
       ;; lift object
       (ros::ros-info "[:try-to-pinch-object] arm:~a lift the object" arm)
@@ -522,7 +523,7 @@
             3000 (send *ri* :get-arm-controller arm :gripper nil) 0)
       (send *ri* :wait-interpolation)
       (unix::sleep 1)  ;; wait for arm to follow
-      (setq graspingp (send *ri* :graspingp arm))
+      (setq graspingp (send *ri* :graspingp arm :pinch))
       (ros::ros-info "[:try-to-pinch-object] arm:~a graspingp: ~a" arm graspingp)
       graspingp))
   (:ik->bin-center
@@ -532,9 +533,9 @@
       (setq bin-cube (gethash bin bin-cubes-))
       (setq bin-coords (send bin-cube :copy-worldcoords))
       (send bin-coords :translate
-            (v+ (float-vector
-                  0.0 0.0 (/ (z-of-cube bin-cube) 2.0))
-                offset) :local)
+            (float-vector 0.0 0.0 (/ (z-of-cube bin-cube) 2.0))
+            :local)
+      (send bin-coords :translate offset :world)
       (send bin-coords :rotate (aref rpy 0) :z)
       (send bin-coords :rotate (aref rpy 1) :y)
       (send bin-coords :rotate (aref rpy 2) :x)
@@ -543,16 +544,19 @@
             :use-gripper use-gripper
             :move-palm-end move-palm-end)))
   (:ik->cardboard-center
-    (arm cardboard &key (offset #f(0 0 0))
+    (arm cardboard &key (offset #f(0 0 0)) (rpy #f(0 0 0))
          (rotation-axis t) (use-gripper nil) (move-palm-end nil))
-    (let (cardboard-coords)
-      (setq cardboard-coords
-            (make-coords
-              :pos (v+ offset
-                       (cond ((eq cardboard :a) (float-vector 1200 100 550))
-                             ((eq cardboard :b) (float-vector 1200 -200 550))
-                             (t (float-vector 1200 0 165))))
-              :rpy (float-vector 0 (/ -pi/2 2) 0)))
+    (let (cardboard-cube cardboard-coords)
+      (setq cardboard-cube (gethash cardboard cardboard-cubes-))
+      (setq cardboard-coords (send cardboard-cube :copy-worldcoords))
+      (send cardboard-coords :translate
+            (float-vector 0.0 0.0 (/ (z-of-cube cardboard-cube) 2.0))
+            :local)
+      (send cardboard-coords :translate offset :world)
+      (send cardboard-coords :rotate (aref rpy 0) :z)
+      (send cardboard-coords :rotate (aref rpy 1) :y)
+      (send cardboard-coords :rotate (aref rpy 2) :x)
+
       (send *baxter* arm :inverse-kinematics cardboard-coords
             :rotation-axis nil :use-gripper nil)
       (send *baxter* arm :inverse-kinematics cardboard-coords
@@ -566,9 +570,9 @@
       (setq tote-cube (gethash arm tote-cubes-))
       (setq tote-coords (send tote-cube :copy-worldcoords))
       (send tote-coords :translate
-            (v+ (float-vector
-                  0.0 0.0 (/ (z-of-cube tote-cube) 2.0))
-                offset) :local)
+            (float-vector 0.0 0.0 (/ (z-of-cube tote-cube) 2.0))
+            :local)
+      (send tote-coords :translate offset :world)
       (send tote-coords :rotate (aref rpy 0) :z)
       (send tote-coords :rotate (aref rpy 1) :y)
       (send tote-coords :rotate (aref rpy 2) :x)
@@ -640,9 +644,11 @@
           (base-name (send (send *baxter* :base_lk) :name)))
       (send *co* :add-object cube :frame-id base-name
             :relative-pose (send cube :copy-worldcoords)
-            :object-id (format nil "bin_~A" (symbol-string bin)))))
+            :object-id (format nil "bin_~A" (symbol-string bin)))
+      (unix::usleep (* 500 1000))))
   (:delete-bin-scene (bin)
-    (send *co* :delete-object (gethash bin bin-cubes-)))
+    (send *co* :delete-object (gethash bin bin-cubes-))
+    (unix::usleep (* 500 1000)))
   (:add-shelf-scene ()
     (dolist (bin (list :a :b :c))
       (send self :add-bin-scene bin)))
@@ -651,24 +657,28 @@
       (send self :delete-bin-scene bin)))
   (:add-cardboard-scene ()
     (let (cardboard-cube (base-name (send (send *baxter* :base_lk) :name)))
-      (dolist (key (list :upper :lower))
+      (dolist (key (list :a :b :c))
         (setq cardboard-cube (gethash key cardboard-cubes-))
         (send *co* :add-object cardboard-cube :frame-id base-name
               :relative-pose (send cardboard-cube :copy-worldcoords)
-              :object-id (format nil "~a_cardboard" (symbol2str key))))))
+              :object-id (format nil "cardboard_~A" (symbol-string key)))
+        (unix::usleep (* 500 1000)))))
   (:delete-cardboard-scene ()
     (let (cardboard-cube)
-      (dolist (key (list :upper :lower))
+      (dolist (key (list :a :b :c))
         (setq cardboard-cube (gethash key cardboard-cubes-))
-        (send *co* :delete-object cardboard-cube))))
+        (send *co* :delete-object cardboard-cube)
+        (unix::usleep (* 500 1000)))))
   (:add-tote-scene (arm)
     (let ((cube (gethash arm tote-cubes-))
           (base-name (send (send *baxter* :base_lk) :name)))
       (send *co* :add-object cube :frame-id base-name
             :relative-pose (send cube :copy-worldcoords)
-            :object-id (format nil "~A_tote" (arm2str arm)))))
+            :object-id (format nil "~A_tote" (arm2str arm)))
+      (unix::usleep (* 500 1000))))
   (:delete-tote-scene (arm)
-    (send *co* :delete-object (gethash arm tote-cubes-)))
+    (send *co* :delete-object (gethash arm tote-cubes-))
+    (unix::usleep (* 500 1000)))
   (:wipe-all-scene ()
     (send *co* :wipe-all))
   (:spin-off-by-wrist
@@ -723,6 +733,23 @@
       (send (ros::service-call service-name req) :updated)))
   (:save-json ()
     (let ((service-name (format nil "/json_saver/save_json"))
+          (req (instance std_srvs::TriggerRequest :init)))
+      (ros::wait-for-service service-name)
+      (send (ros::service-call service-name req) :success)))
+  (:get-scale-candidates (arm action &key (stamp (ros::time-now)))
+    (let ((topic-name
+            (format nil "~a_hand_camera/weight_candidates_refiner/output/candidates/~a"
+                    (arm2str arm) (symbol2str action)))
+          msg)
+      (setq msg
+        (one-shot-subscribe topic-name jsk_recognition_msgs::LabelArray
+                            :timeout 10000
+                            :after-stamp stamp))
+      (if msg
+        (mapcar #'(lambda (label-msg) (send label-msg :name)) (send msg :labels))
+        :timeout)))
+  (:reset-scale (arm)
+    (let ((service-name (format nil "/~a_hand_camera/weight_candidates_refiner/reset" (arm2str arm)))
           (req (instance std_srvs::TriggerRequest :init)))
       (ros::wait-for-service service-name)
       (send (ros::service-call service-name req) :success))))

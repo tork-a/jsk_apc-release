@@ -11,8 +11,8 @@
 (defun make-picking-state-machine ()
   (setq *sm*
         (make-state-machine
-          '((:init -> :recognize-bin-boxes)
-            (:recognize-bin-boxes -> :wait-for-user-input)
+          '((:init -> :recognize-bboxes)
+            (:recognize-bboxes -> :wait-for-user-input)
             (:wait-for-user-input -> :wait-for-opposite-arm)
             (:wait-for-user-input !-> :finish)
             (:wait-for-opposite-arm -> :set-target)
@@ -42,10 +42,10 @@
                  (send *ti* :update-state *arm* :init)
                  (ros::ros-info "start ~a picking" (arm2str *arm*))
                  t))
-            (:recognize-bin-boxes
+            (:recognize-bboxes
               '(lambda (userdata)
-                 (send *ti* :update-state *arm* :recognize-bin-boxes)
-                 (send *ti* :recognize-bin-boxes)
+                 (send *ti* :update-state *arm* :recognize-bboxes)
+                 (send *ti* :recognize-bboxes)
                  t))
             (:wait-for-user-input
               '(lambda (userdata)
@@ -123,10 +123,15 @@
   (jsk_arc2017_baxter::pick-init :ctype ctype :moveit moveit)
   (when moveit (send *ti* :wipe-all-scene))
   (send *ri* :gripper-servo-on)
+  ;; initialize fingers
   (send *ri* :move-hand :rarm
-        (send *baxter* :hand-grasp-pre-pose :rarm :cylindrical) 1000)
+        (send *baxter* :hand-grasp-pre-pose :rarm :cylindrical) 1000 :wait nil)
+  (send *ri* :move-hand :larm
+        (send *baxter* :hand-grasp-pre-pose :larm :cylindrical) 1000)
   (send *ri* :move-hand :rarm
-        (send *baxter* :hand-grasp-pre-pose :rarm :opposed) 1000)
+        (send *baxter* :hand-grasp-pre-pose :rarm :opposed) 1000 :wait nil)
+  (send *ri* :move-hand :larm
+        (send *baxter* :hand-grasp-pre-pose :larm :opposed) 1000)
   (send *ri* :angle-vector (send *baxter* :fold-pose-back))
   (send *ri* :wait-interpolation)
   (when calib-pressure
