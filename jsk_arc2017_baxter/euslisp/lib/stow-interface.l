@@ -55,9 +55,8 @@
       (when moveit-p (send self :add-shelf-scene))
       (when moveit-p (send self :add-tote-scene arm))
       (send *ri* :stop-grasp arm)
-      (if (eq arm :rarm)
-        (send self :move-fingers-pinch->init arm))
-      (send *baxter* :head_pan :joint-angle (if (eq arm :larm) -80 80))
+      (send self :move-fingers-pinch->init arm)
+      (send *baxter* :head_pan :joint-angle (if (eq arm :larm) -70 70))
       (send *ri* :angle-vector-raw (send *baxter* :angle-vector) 3000 :head-controller 0)
       (send *ri* :wait-interpolation)
       (ros::ros-info "[main] Recognizing objects in tote")
@@ -96,13 +95,14 @@
     (ros::ros-info "[main] arm: ~a, recognize fail count: ~a" arm recognize-fail-count)
     (> recognize-fail-count 1))
   (:set-grasp-style (arm)
-    (if (and (eq grasp-style :suction) (eq arm :rarm))
+    (if (eq grasp-style :suction)
       (setq grasp-style :pinch) (setq grasp-style :suction)))
   (:pick-object (arm)
     (setq recognize-fail-count 0)
     (when moveit-p (send self :delete-tote-scene arm))
+    (send self :reset-scale arm)
     (send self :pick-object-in-tote arm
-          :n-trial 1
+          :n-trial (if (eq grasp-style :suction) 2 1)
           :n-trial-same-pos 1
           :do-stop-grasp nil
           :grasp-style grasp-style)
@@ -118,7 +118,7 @@
             3000 (send *ri* :get-arm-controller arm :gripper nil) 0))
     (send *ri* :wait-interpolation)
     (when moveit-p (send self :delete-tote-scene arm))
-    (setq graspingp (send *ri* :graspingp arm))
+    (setq graspingp (send *ri* :graspingp arm grasp-style))
     (ros::ros-info "[main] arm: ~a graspingp: ~a" arm graspingp)
     graspingp)
   (:return-from-pick-object (arm)
@@ -136,7 +136,16 @@
     ;; TODO: in-hand verification
     ;; TODO: (setq target-obj (send *ti* :recognize-object-in-hand arm))
     ;; TODO: (return-from :verify-objec target-obj)
-    t)
+    (let (scale-candidates)
+      (setq scale-candidates
+            (send self :get-scale-candidates arm :picked :stamp (ros::time-now)))
+      (when (eq scale-candidates :timeout)
+        (ros::ros-error "subscribed weight candidates, but timeout")
+        (return-from :verify-object nil))
+      (ros::ros-info-green "[main] arm ~a: scale candidates ~a" arm scale-candidates)
+      (when (eq (length scale-candidates) 1)
+        (setq target-obj (car scale-candidates)))
+      (if (find target-obj scale-candidates :test #'string=) t nil)))
   (:check-picking-fail-count (arm)
     (incf picking-fail-count)
     (ros::ros-info "[main] arm: ~a, picking fail count: ~a" arm picking-fail-count)
@@ -168,9 +177,13 @@
     (send *ri* :stop-grasp arm)
     (if (eq grasp-style :pinch)
       (send self :move-fingers-pinch->init arm))
-    (send self :spin-off-by-wrist 5)
+    (send self :spin-off-by-wrist arm :times 5)
     (send *ri* :wait-interpolation)
     (ros::ros-info "[main] ~a, return object in tote" arm)
+    (send *ri* :angle-vector-raw
+          (send *baxter* arm :move-end-pos #f(0 0 200) :world :rotation-axis :z)
+          :fast (send *ri* :get-arm-controller arm) 0 :scale 3.0)
+    (send *ri* :wait-interpolation)
     (when moveit-p (send self :add-tote-scene arm))
     (send self :fold-pose-back arm)
     (send *ri* :wait-interpolation))
@@ -178,18 +191,19 @@
     (let (dropped)
       (ros::ros-info "[main] ~a, place object in bin ~a" arm target-bin)
       (when moveit-p (send self :add-tote-scene arm))
-      (send *baxter* :head_pan :joint-angle (if (eq arm :larm) 80 -80))
+      (send *baxter* :head_pan :joint-angle (if (eq arm :larm) 70 -70))
+
       (if (eq grasp-style :suction)
         (send *ri* :angle-vector
               (send self :ik->bin-center arm target-bin
                     :offset #f(0 0 300) :rotation-axis :z :use-gripper t)
-              4000 (send *ri* :get-arm-controller arm) 0)
+              4000 (send *ri* :get-arm-controller arm :head t) 0)
         (send *ri* :angle-vector
               (send self :ik->bin-center arm target-bin
                     :offset #f(0 0 300) :rotation-axis nil :move-palm-end t)
-              4000 (send *ri* :get-arm-controller arm :gripper nil) 0))
+              4000 (send *ri* :get-arm-controller arm :gripper nil :head t) 0))
       (send *ri* :wait-interpolation)
-      (setq dropped (not (send *ri* :graspingp arm)))
+      (setq dropped (not (send *ri* :graspingp arm grasp-style)))
       (if dropped
         (progn
           (ros::ros-error "[main] arm ~a: dropped object" arm)
