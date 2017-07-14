@@ -51,12 +51,22 @@
                    ;; We have to move mimic joints, too
                    :right_gripper_r_finger_yaw_joint
                    :right_gripper_r_finger_roll_joint))
+    (sethash :larm hand-joints-
+             (list :left_gripper_finger_yaw_joint
+                   :left_gripper_finger_roll_joint
+                   ;; We have to move mimic joints, too
+                   :left_gripper_r_finger_yaw_joint
+                   :left_gripper_r_finger_roll_joint))
     ;; translate palm end for good cylindrical grasp
     (send self :rarm-palm-endpoint :translate #f(30 0 0) :local)
+    (send self :larm-palm-endpoint :translate #f(30 0 0) :local)
     )
   (:rarm-palm-endpoint
     (&rest args)
     (send* self :right_gripper_palm_endpoint_lk args))
+  (:larm-palm-endpoint
+    (&rest args)
+    (send* self :left_gripper_palm_endpoint_lk args))
   (:set-ik-prepared-poses
     (poses)
     (if (listp poses)
@@ -76,7 +86,7 @@
     ;; currently works only if move-target is not list
     ;; set endpoint of palm as move-target
     (if move-palm-end
-      (dolist (limb (list :rarm))
+      (dolist (limb (list :rarm :larm))
         (when (eq move-target (send self limb :end-coords))
           (setq move-target (send self limb :palm-endpoint))
           (setq link-list (send self :link-list (send move-target :parent))))))
@@ -84,7 +94,7 @@
     (if (null use-gripper)
       (cond ((equal (send (car (last link-list)) :name) "right_gripper_pad_with_base")
              (setq link-list (butlast link-list 2)))
-            ((equal (send (car (last link-list)) :name) "left_gripper_vacuum_pad_base")
+            ((equal (send (car (last link-list)) :name) "left_gripper_pad_with_base")
              (setq link-list (butlast link-list))))
       nil)
     (send-super* :inverse-kinematics target-coords
@@ -109,15 +119,16 @@
     (case (car args)
       ((:angle-vector)
        (let ((av (cadr args)) (joints (gethash arm hand-joints-)))
-         (when av
-           (dotimes (i (length av))
-             (send self (elt joints i) :joint-angle (elt av i))
-             (send self (elt joints (+ i (length av))) :joint-angle (elt av i))))
+         (if (and (null (eq (length av) 0)) (null (eq (length av) 2)))
+           (progn (ros::ros-error "length of angle-vector must be 0 or 2.~%") (exit)))
+         (dotimes (i (length av))
+           (send self (elt joints i) :joint-angle (elt av i))
+           (send self (elt joints (+ i (length av))) :joint-angle (elt av i)))
          (mapcar
            #'(lambda (j) (send self j :joint-angle))
            (subseq joints 0 (/ (length joints) 2)))
          ))
-      (t (error ":hand first arg is invalid. args: ~A~%" args))
+      (t (ros::ros-error ":hand first arg is invalid. args: ~A~%" args) (exit))
       ))
   (:hand-grasp-pre-pose
     (arm style)
@@ -125,7 +136,7 @@
       (:opposed (send self :hand arm :angle-vector #f(0 0)))
       (:spherical (send self :hand arm :angle-vector #f(30 0)))
       (:cylindrical (send self :hand arm :angle-vector #f(90 0)))
-      (t (error ":hand-grasp-pre-pose no such style ~A~%" style))
+      (t (ros::ros-error ":hand-grasp-pre-pose no such style ~A~%" style) (exit))
     ))
   (:hand-grasp-pose
     (arm style &key (angle 180))
@@ -133,7 +144,7 @@
       (:opposed (send self :hand arm :angle-vector (float-vector 0 angle)))
       (:spherical (send self :hand arm :angle-vector (float-vector 30 angle)))
       (:cylindrical (send self :hand arm :angle-vector (float-vector 90 angle)))
-      (t (error ":hand-grasp-pose no such style ~A~%" style))
+      (t (ros::ros-error ":hand-grasp-pose no such style ~A~%" style) (exit))
     ))
   (:avoid-shelf-pose
     (arm bin)

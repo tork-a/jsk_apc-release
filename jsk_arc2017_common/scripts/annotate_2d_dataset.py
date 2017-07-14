@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import datetime
 import json
 import os
@@ -23,23 +24,18 @@ def json_to_label(json_file):
 
     img = labelme.utils.img_b64_to_array(data['imageData'])
     shapes = []
-    shelf_shape = None
+    shelf_shapes = []
     for shape in data['shapes']:
         if shape['label'] == '41':
-            if shelf_shape is not None:
-                raise RuntimeError
-            shelf_shape = shape
+            shelf_shapes.append(shape)
         else:
             shapes.append(shape)
-
-    if shelf_shape is None:
-        raise RuntimeError
 
     lbl = np.zeros(img.shape[:2], dtype=np.int32)
     lbl.fill(-1)
 
     lbl_shelf, _ = labelme.utils.labelme_shapes_to_label(
-        img.shape, [shelf_shape])
+        img.shape, shelf_shapes)
     mask_shelf = lbl_shelf == 1
     lbl[mask_shelf] = 41
 
@@ -55,7 +51,12 @@ def json_to_label(json_file):
 
 
 def main():
-    dataset_dir = osp.join(PKG_DIR, 'data/datasets/JSKV1')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--dataset-dir', help='Dataset directory',
+                        default=osp.join(PKG_DIR, 'data/datasets/JSKV1'))
+    args = parser.parse_args()
+
+    dataset_dir = args.dataset_dir
     if not osp.exists(dataset_dir):
         print('Please install JSKV1 dataset to: %s' % dataset_dir)
         quit(1)
