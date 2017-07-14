@@ -1,0 +1,32 @@
+<launch>
+
+  <arg name="INPUT_CLOUD" />
+
+
+  <include file="$(find jsk_apc2015_common)/launch/kiva_pod_filter.launch">
+    <arg name="INPUT_CLOUD" value="$(arg INPUT_CLOUD)" />
+    <arg name="OUTPUT_CLOUD" value="$(arg INPUT_CLOUD)_pod_filtered" />
+  </include>
+
+  <node name="bin_clipper"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/AttentionClipper">
+    <remap from="~input/points" to="$(arg INPUT_CLOUD)_pod_filtered" />
+    <rosparam>
+      use_multiple_attention: true
+      initial_pos_list: [[-0.21, 0.29, 0.36], [-0.21, 0, 0.36], [-0.21, -0.29, 0.36], [-0.21, 0.29, 0.11], [-0.21, 0, 0.11], [-0.21, -0.29, 0.11]]
+      initial_rot_list: [[0,0,0], [0,0,0], [0,0,0], [0,0,0], [0,0,0], [0,0,0]]
+      dimensions: [[0.37, 0.25, 0.22],[0.37, 0.29, 0.22],[0.37, 0.25, 0.22], [0.37, 0.25, 0.22],[0.37, 0.29, 0.22],[0.37, 0.25, 0.22]]
+      frame_id_list: [kiva_pod_base, kiva_pod_base, kiva_pod_base, kiva_pod_base, kiva_pod_base, kiva_pod_base]
+      prefixes: [bin_a, bin_b, bin_c, bin_d, bin_e, bin_f]
+    </rosparam>
+  </node>
+
+  <node name="cpi_decomposer"
+        pkg="nodelet" type="nodelet"
+        args="standalone jsk_pcl/ClusterPointIndicesDecomposer">
+    <remap from="~input" to="$(arg INPUT_CLOUD)_pod_filtered" />
+    <remap from="~target" to="bin_clipper/output/cluster_point_indices" />
+  </node>
+
+</launch>
