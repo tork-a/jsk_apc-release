@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import jsk_arc2017_common
 from jsk_arc2017_common.msg import WorkOrder
 from jsk_arc2017_common.msg import WorkOrderArray
 import json
@@ -50,8 +51,27 @@ class WorkOrderPublisher(object):
             self.cardboard_ids[size_id] = 'ABC'[i]
 
         publish_orders = self._generate_publish_orders(orders)
-        self.larm_msg = self._generate_msg(publish_orders['left_hand'])
-        self.rarm_msg = self._generate_msg(publish_orders['right_hand'])
+
+        # first: sort by object weight
+        object_weights = jsk_arc2017_common.get_object_weights()
+        left_sorted_orders = sorted(
+            publish_orders['left_hand'],
+            key=lambda order: object_weights[order['item']])
+        right_sorted_orders = sorted(
+            publish_orders['right_hand'],
+            key=lambda order: object_weights[order['item']])
+
+        # second: sort by object graspability
+        graspability = jsk_arc2017_common.get_object_graspability()
+        left_sorted_orders = sorted(
+            left_sorted_orders,
+            key=lambda order: graspability[order['item']]['suction'])
+        right_sorted_orders = sorted(
+            right_sorted_orders,
+            key=lambda order: graspability[order['item']]['suction'])
+
+        self.larm_msg = self._generate_msg(left_sorted_orders)
+        self.rarm_msg = self._generate_msg(right_sorted_orders)
         self.larm_pub = rospy.Publisher(
             '~left_hand', WorkOrderArray, queue_size=1)
         self.rarm_pub = rospy.Publisher(
@@ -74,19 +94,13 @@ class WorkOrderPublisher(object):
                     'box': self.cardboard_ids[size_id]
                 }
                 if bin_ == 'A':
-                    hand = 'left_hand'
+                    publish_orders['left_hand'].append(order)
                 elif bin_ == 'C':
-                    hand = 'right_hand'
+                    publish_orders['right_hand'].append(order)
                 else:  # bin_ == 'B'
-                    right_length = len(publish_orders['right_hand'])
-                    left_length = len(publish_orders['left_hand'])
-                    if right_length > left_length:
-                        hand = 'left_hand'
-                    elif left_length > right_length:
-                        hand = 'right_hand'
-                    else:
-                        hand = random.choice(['left_hand', 'right_hand'])
-                publish_orders[hand].append(order)
+                    publish_orders['left_hand'].append(order)
+                    publish_orders['right_hand'].append(order)
+
         return publish_orders
 
     def _generate_msg(self, orders):
