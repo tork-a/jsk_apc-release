@@ -1,4 +1,4 @@
-From a434481d73324ead98c1d130e1027908c2025b93 Mon Sep 17 00:00:00 2001
+From 2136cdf35bc221051a4df71954ae4f8811607578 Mon Sep 17 00:00:00 2001
 From: Kei Okada <kei.okada@gmail.com>
 Date: Fri, 24 Jun 2016 11:40:54 +0900
 Subject: [PATCH] uncomment pip installed packges
@@ -20,5 +20,5 @@ index efec867..930e483 100644
    <test_depend>roslint</test_depend>
    <test_depend>jsk_tools</test_depend>
 -- 
-1.9.1
+1.9.0
 
