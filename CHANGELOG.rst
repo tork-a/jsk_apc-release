@@ -2,6 +2,36 @@
 Changelog for package jsk_2016_01_baxter_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2017-07-24)
+------------------
+* Use baxter_simple.urdf in jsk_2016_01_baxter_apc baxterrgv5.xacro
+* Use baxter_simple.urdf in jsk_2016_01_baxter_apc baxter.xacro
+* Re enable jsk_2016_01_baxter_apc's tests
+* Contributors: Kentaro Wada
+
+3.3.0 (2017-07-15)
+------------------
+* disable test to pass travis
+* Contributors: Kei Okada
+
+3.2.0 (2017-07-06)
+------------------
+
+3.1.0 (2017-06-30)
+------------------
+* Change save_dir in dynamic
+* Launch right stereo camera in baxter.launch
+* move stereo_camera_info files from jsk_2016_01_baxter_apc to jsk_arc2017_baxter
+* Use arduino symlink in vacuum gripper
+* Order agonistic options to control vacuum gripper
+* Don't set link-list as nil in IK when it is unspecified (`#2134 <https://github.com/start-jsk/jsk_apc/issues/2134>`_)
+* remove unused include_dirs
+* move ik->nearest-pose method to baxter.l
+* fix camera_name in yaml files
+* add calibration yaml files of astra mini stereo
+* temporarily tuned pressure threshold in calibration
+* Contributors: Kentaro Wada, Shingo Kitagawa, Shun Hasegawa, Yuto Uchimi, YutoUchimi
+
 3.0.3 (2017-05-18)
 ------------------
 * fix default-controller not to set head twice (`#2097 <https://github.com/start-jsk/jsk_apc/issues/2097>`_)
