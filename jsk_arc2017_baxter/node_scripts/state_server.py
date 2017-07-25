@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding:utf-8 -*- from jsk_arc2017_baxter.srv import CheckCanStart
+# -*- coding:utf-8 -*-
 
 from jsk_arc2017_baxter.srv import CheckCanStart
 from jsk_arc2017_baxter.srv import CheckCanStartResponse
@@ -88,16 +88,17 @@ class StateServer(threading.Thread):
             if state == 'wait-for-opposite-arm-start-picking':
                 if opposite_state == 'set-target' \
                         or opposite_state == 'wait-for-user-input' \
-                        or opposite_state == 'wait-for-opposite-arm-start-picking':
+                        or opposite_state == 'wait-for-opposite-arm-start-picking':  # NOQA
                     can_start = True
                 else:
                     can_start = False
             elif state == 'wait-for-opposite-arm':
                 if opposite_state == 'set-target' \
                         or opposite_state == 'recognize-object' \
-                        or opposite_state == 'set-grasp-style' \
+                        or opposite_state == 'check-can-start-picking' \
+                        or opposite_state == 'check-start-picking-fail-count' \
                         or opposite_state == 'pick-object' \
-                        or opposite_state == 'check-picking-fail-count' \
+                        or opposite_state == 'change-grasp-style' \
                         or opposite_state == 'verify-object' \
                         or opposite_state == 'set-target-cardboard' \
                         or opposite_state == 'place-object' \
@@ -112,15 +113,16 @@ class StateServer(threading.Thread):
             if state == 'wait-for-opposite-arm-start-picking':
                 if opposite_state == 'recognize-object' \
                         or opposite_state == 'wait-for-user-input' \
-                        or opposite_state == 'wait-for-opposite-arm-start-picking':
+                        or opposite_state == 'wait-for-opposite-arm-start-picking':  # NOQA
                     can_start = True
                 else:
                     can_start = False
             elif state == 'wait-for-opposite-arm':
                 if opposite_state == 'recognize-object' \
-                        or opposite_state == 'set-grasp-style' \
+                        or opposite_state == 'check-can-start-picking' \
+                        or opposite_state == 'check-start-picking-fail-count' \
                         or opposite_state == 'pick-object' \
-                        or opposite_state == 'check-picking-fail-count' \
+                        or opposite_state == 'change-grasp-style' \
                         or opposite_state == 'verify-object' \
                         or opposite_state == 'set-target-bin' \
                         or opposite_state == 'return-object':
