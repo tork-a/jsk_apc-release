@@ -1,5 +1,6 @@
 <launch>
 
+  <arg name="load_driver" default="true" />
   <arg name="launch_left_hand_stereo" default="true" />
   <arg name="launch_right_hand_stereo" default="true" />
   <arg name="rviz" default="false" />
@@ -43,6 +44,7 @@
       <!-- left -->
       <include file="$(find openni2_launch)/launch/openni2.launch">
         <arg name="respawn" value="true" />
+        <arg name="load_driver" value="$(arg load_driver)" />
         <arg name="camera" value="left" />
         <arg name="rgb_frame_id" value="left_hand_camera_left_rgb_optical_frame" />
         <arg name="depth_frame_id" value="left_hand_camera_left_depth_optical_frame" />
@@ -52,26 +54,38 @@
         <arg name="rgb_camera_info_url" value="file://$(find jsk_arc2017_baxter)/data/camera_info/stereo_rgb_$(arg l_hand_stereo_devices)_left.yaml" />
         <arg name="depth_camera_info_url" value="file://$(find jsk_arc2017_baxter)/data/camera_info/depth_$(arg l_hand_l_camera_device_id).yaml" />
       </include>
-      <node name="left_rgb_static_tf_publisher"
-            pkg="tf" type="static_transform_publisher"
-            args="0.030 0.018 -0.000 -0.000 0.000 -0.001 left_hand_camera_left_depth_optical_frame left_hand_camera_left_rgb_optical_frame 20" />
-      <node name="left_depth_static_tf_publisher"
-            pkg="tf" type="static_transform_publisher"
-            args="-0.020 -0.056 -0.005 1.550 0.029 -0.003 left_hand left_hand_camera_left_depth_optical_frame 20" />
-      <!-- XXX
-        <node name="marker_6dof"
-              pkg="jsk_interactive_marker" type="marker_6dof">
-          <rosparam>
-            object_type: cube
-            frame_id: left_hand
-            publish_tf: true
-            tf_frame: left_hand_camera_left_depth_optical_frame
-            object_x: 0.1
-            object_y: 0.1
-            object_z: 0.1
-          </rosparam>
-        </node>
-      -->
+      <node name="marker_6dof_left_tf_depth_to_rgb"
+            pkg="jsk_interactive_marker" type="marker_6dof">
+        <rosparam>
+          object_type: cube
+          frame_id: left_hand_camera_left_depth_optical_frame
+          publish_tf: true
+          tf_frame: left_hand_camera_left_rgb_optical_frame
+          object_x: 0.1
+          object_y: 0.1
+          object_z: 0.1
+          initial_x: 0.04
+          initial_y: 0.018
+          initial_z: -0.02
+          initial_orientation: [0, 0, 0, 1]
+        </rosparam>
+      </node>
+      <node name="marker_6dof_left_tf_hand_to_depth"
+            pkg="jsk_interactive_marker" type="marker_6dof">
+        <rosparam>
+          object_type: cube
+          frame_id: left_hand
+          publish_tf: true
+          tf_frame: left_hand_camera_left_depth_optical_frame
+          object_x: 0.1
+          object_y: 0.1
+          object_z: 0.1
+          initial_x: -0.076
+          initial_y: -0.044
+          initial_z: -0.004
+          initial_orientation: [0.009074,  0.01140819,  0.69962619,  0.71436035]
+        </rosparam>
+      </node>
       <group ns="left/depth_registered">
         <node name="image_rect_view"
               pkg="image_view" type="image_view">
@@ -89,6 +103,7 @@
       <!-- right -->
       <include file="$(find openni2_launch)/launch/openni2.launch">
         <arg name="respawn" value="true" />
+        <arg name="load_driver" value="$(arg load_driver)" />
         <arg name="camera" value="right" />
         <arg name="rgb_frame_id" value="left_hand_camera_right_rgb_optical_frame" />
         <arg name="depth_frame_id" value="left_hand_camera_right_depth_optical_frame" />
@@ -273,6 +288,7 @@
       <!-- left -->
       <include file="$(find openni2_launch)/launch/openni2.launch">
         <arg name="respawn" value="true" />
+        <arg name="load_driver" value="$(arg load_driver)" />
         <arg name="camera" value="left" />
         <arg name="rgb_frame_id" value="right_hand_camera_left_rgb_optical_frame" />
         <arg name="depth_frame_id" value="right_hand_camera_left_depth_optical_frame" />
@@ -282,26 +298,38 @@
         <arg name="rgb_camera_info_url" value="file://$(find jsk_arc2017_baxter)/data/camera_info/stereo_rgb_$(arg r_hand_stereo_devices)_left.yaml" />
         <arg name="depth_camera_info_url" value="file://$(find jsk_arc2017_baxter)/data/camera_info/depth_$(arg r_hand_l_camera_device_id).yaml" />
       </include>
-      <node name="left_rgb_static_tf_publisher"
-            pkg="tf" type="static_transform_publisher"
-            args="0.05 0 0 0 0 0 right_hand_camera_left_depth_optical_frame right_hand_camera_left_rgb_optical_frame 20" />
-      <!-- XXX
-        <node name="marker_6dof"
-              pkg="jsk_interactive_marker" type="marker_6dof">
-          <rosparam>
-            object_type: cube
-            frame_id: right_hand
-            publish_tf: true
-            tf_frame: right_hand_camera_left_depth_optical_frame
-            object_x: 0.1
-            object_y: 0.1
-            object_z: 0.1
-          </rosparam>
-        </node>
-      -->
-      <node name="left_depth_static_tf_publisher"
-            pkg="tf" type="static_transform_publisher"
-            args="0.021 -0.062 0.016 1.585 -0.082 -0.063 right_hand right_hand_camera_left_depth_optical_frame 20" />
+      <node name="marker_6dof_left_tf_depth_to_rgb"
+            pkg="jsk_interactive_marker" type="marker_6dof">
+        <rosparam>
+          object_type: cube
+          frame_id: right_hand_camera_left_depth_optical_frame
+          publish_tf: true
+          tf_frame: right_hand_camera_left_rgb_optical_frame
+          object_x: 0.1
+          object_y: 0.1
+          object_z: 0.1
+          initial_x: 0.041
+          initial_y: 0.018
+          initial_z: 0.025
+          initial_orientation: [0, 0, 0, 1]
+        </rosparam>
+      </node>
+      <node name="marker_6dof_left_tf_hand_to_depth"
+            pkg="jsk_interactive_marker" type="marker_6dof">
+        <rosparam>
+          object_type: cube
+          frame_id: right_hand
+          publish_tf: true
+          tf_frame: right_hand_camera_left_depth_optical_frame
+          object_x: 0.1
+          object_y: 0.1
+          object_z: 0.1
+          initial_x: -0.051
+          initial_y: -0.050
+          initial_z: 0.020
+          initial_orientation: [0.035, -0.019, 0.731, 0.681]
+        </rosparam>
+      </node>
 
       <group ns="left/depth_registered">
         <node name="image_rect_view"
@@ -320,6 +348,7 @@
       <!-- right -->
       <include file="$(find openni2_launch)/launch/openni2.launch">
         <arg name="respawn" value="true" />
+        <arg name="load_driver" value="$(arg load_driver)" />
         <arg name="camera" value="right" />
         <arg name="rgb_frame_id" value="right_hand_camera_right_rgb_optical_frame" />
         <arg name="depth_frame_id" value="right_hand_camera_right_depth_optical_frame" />

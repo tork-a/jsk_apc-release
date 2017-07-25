@@ -1,6 +1,6 @@
 prismatic_joint_controller:
   controller:
-    package: jsk_2016_01_baxter_apc
+    package: jsk_arc2017_baxter
     module: calib_required_joint_controller
     type: CalibRequiredJointController
   joint_name: right_gripper_prismatic_joint_motor
@@ -9,6 +9,7 @@ prismatic_joint_controller:
   calib_speed: 1.0
   calib_torque_limit: 0.3
   detect_limit_load: 0.17
+  is_multiturn: true
   motor:
     id: 1
     init: 0
@@ -51,6 +52,6 @@ finger_tendon_controller:
   ignored_errors: ['DXL_OVERLOAD_ERROR']
   motor:
     id: 3
-    init: 3370
-    min: 3370
-    max: 800
+    init: 3140
+    min: 3140
+    max: 570
