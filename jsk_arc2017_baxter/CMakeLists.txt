@@ -11,7 +11,10 @@ find_package(catkin REQUIRED COMPONENTS
     transmission_interface
     controller_manager
     dynamixel_msgs
+    actionlib_msgs
 )
+
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -28,10 +31,16 @@ add_service_files(
     CheckCanStart.srv
 )
 
+add_action_files(
+    DIRECTORY action
+    FILES CalibJoint.action
+)
+
 generate_messages(
     DEPENDENCIES
     std_msgs
     force_proximity_ros
+    actionlib_msgs
 )
 
 ################################################
@@ -54,6 +63,7 @@ catkin_package(
     transmission_interface
     controller_manager
     dynamixel_msgs
+    actionlib_msgs
 )
 
 ###########
@@ -120,6 +130,7 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test_stow_state_server.test)
   add_rostest(test/test_pick_main.test)
   add_rostest(test/test_stow_main.test)
+  add_rostest(test/test_arc_interface.test)
   add_rostest(test/test_pick_arc_interface.test)
   add_rostest(test/test_stow_arc_interface.test)
   find_package(jsk_tools REQUIRED)
