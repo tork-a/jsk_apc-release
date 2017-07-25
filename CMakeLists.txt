@@ -2,8 +2,12 @@ cmake_minimum_required(VERSION 2.8.3)
 project(jsk_arc2017_common)
 
 find_package(catkin REQUIRED
+    dynamic_reconfigure
     message_generation
+    std_msgs
 )
+
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -11,12 +15,27 @@ find_package(catkin REQUIRED
 
 add_message_files(
     FILES
+    Weight.msg
+    WeightStamped.msg
     WorkOrder.msg
     WorkOrderArray.msg
+    ObjectCandidates.msg
+)
+
+add_service_files(
+    FILES
+    UpdateJSON.srv
+    GetGraspStyle.srv
+)
+
+generate_dynamic_reconfigure_options(
+    cfg/CandidatesPublisher.cfg
+    cfg/PublishDatasetV3.cfg
 )
 
 generate_messages(
     DEPENDENCIES
+    std_msgs
 )
 
 ################################################
