@@ -17,10 +17,12 @@
           larm-pressure-threshold-
           proximity-threshold-
           hand-actions-
+          prismatic-calib-actions-
           pressure-
           finger-flex-
           finger-load-
           prismatic-load-
+          prismatic-vel-
           proximities-
           proximity-init-values-))
 
@@ -63,6 +65,7 @@
     (ros::advertise "/gripper_front/limb/left/servo/torque" std_msgs::Bool)
     (ros::advertise "/gripper_front/limb/right/servo/torque" std_msgs::Bool)
     (setq hand-actions- (make-hash-table))
+    (setq prismatic-calib-actions- (make-hash-table))
     (dolist (arm (list :rarm :larm))
       ;; initialize hand action
       (sethash arm hand-actions-
@@ -75,7 +78,19 @@
       (unless
         (and joint-action-enable (send (gethash arm hand-actions-) :wait-for-server 3))
         (ros::ros-warn "~A is not respond" (gethash arm hand-actions-))
-        (ros::ros-info "*** if you do not have hand, you can ignore this message ***")))
+        (ros::ros-info "*** if you do not have hand, you can ignore this message ***"))
+      ;; initialize action for prismatic joint calib
+      (sethash arm prismatic-calib-actions-
+               (instance ros::simple-action-client :init
+                         (format nil "/gripper_front/limb/~a/dxl/prismatic_joint_controller/calib"
+                                 (arm2str arm))
+                         jsk_arc2017_baxter::CalibJointAction
+                         :groupname groupname))
+      ;; check if action is respond
+      (unless
+        (and joint-action-enable (send (gethash arm prismatic-calib-actions-) :wait-for-server 3))
+        (ros::ros-error "~A is not respond" (gethash arm prismatic-calib-actions-))
+        (ros::ros-error "You cannot calibrate gripper joint")))
     ;; gripper sensors
     (setq pressure- (make-hash-table))
     (setq finger-load- (make-hash-table))
@@ -106,6 +121,7 @@
                       :groupname groupname)
       (sethash arm finger-flex- (make-hash-table))
       (sethash arm proximity-init-values- (make-hash-table))
+      (sethash arm proximities- (make-hash-table))
       (dolist (side (list :right :left))
         (ros::subscribe (format nil "/gripper_front/limb/~a/flex/~a/state"
                                 (arm2str arm) (symbol2str side))
@@ -187,7 +203,8 @@
     (sethash side (gethash arm finger-flex-) (send msg :data)))
   (:set-proximities
     (arm msg)
-    (sethash arm proximities- (send msg :proximities)))
+    (sethash :left (gethash arm proximities-) (send (elt (send msg :proximities) 0) :average))
+    (sethash :right (gethash arm proximities-) (send (elt (send msg :proximities) 1) :average)))
 
   ;; Hand interface
   ;; based on naoqi-interface and fetch-interface
@@ -237,20 +254,20 @@
     (gethash arm prismatic-vel-))
   (:get-proximity (arm side &key (raw nil))
     (send self :spin-once)
-    (let ((rl (gethash :left (gethash arm proximity-init-values-)))
-          (rr (gethash :right (gethash arm proximity-init-values-)))
-          ;;(rm (gethash :middle (gethash arm proximity-init-values-)))
-          (proximities (gethash arm proximities-)))
+    (let ((l-init (gethash :left (gethash arm proximity-init-values-)))
+          (r-init (gethash :right (gethash arm proximity-init-values-)))
+          (l (gethash :left (gethash arm proximities-)))
+          (r (gethash :right (gethash arm proximities-))))
       (if (null raw)
         (cond
           ;; for sparkfun proximity sensor
           ((eq side :left)
-           (/ (- (send (elt proximities 0) :average) rl) (expt (/ rl 2500.0) 1.5)))
+           (/ (- l l-init) (expt (/ l-init 2500.0) 1.5)))
           ((eq side :right)
-           (/ (- (send (elt proximities 1) :average) rr) (expt (/ rr 2500.0) 1.5))))
+           (/ (- r r-init) (expt (/ r-init 2500.0) 1.5))))
         (cond
-          ((eq side :left) (send (elt proximities 0) :average))
-          ((eq side :right) (send (elt proximities 1) :average))))))
+          ((eq side :left) l)
+          ((eq side :right) r)))))
   (:get-real-finger-av (arm)
     (send self :update-robot-state :wait-until-update t)
     (float-vector
@@ -260,6 +277,12 @@
             :joint-angle)))
   (:finger-closep (arm)
     (> (aref (send self :get-real-finger-av arm) 1) 30))
+  (:start-prismatic-calib (arm)
+    (send (gethash arm prismatic-calib-actions-)
+          :send-goal (instance jsk_arc2017_baxter::CalibJointActionGoal :init)))
+  (:prismatic-calibratingp (arm)
+    (send self :spin-once)
+    (eq (send (gethash arm prismatic-calib-actions-) :get-state) ros::*simple-goal-state-active*))
 
   (:get-arm-controller (arm &key (gripper t) (head nil))
     (cond ((eq arm :rarm)
@@ -341,8 +364,8 @@
                  ;; if cylindrical and spherical grasp, move other gripper joints
                  (send robot l/r :gripper-p :joint-angle -90)
                  (pushback (send robot :angle-vector) avs)
-                 (send robot l/r :gripper-x :joint-angle 0)
-                 (pushback (send robot :angle-vector) avs)
+                 ;(send robot l/r :gripper-x :joint-angle 0)
+                 ;(pushback (send robot :angle-vector) avs)
                  (send robot :angle-vector prev-av)
                  (send self :angle-vector-sequence-raw avs)
                  (send self :wait-interpolation)))))))
@@ -365,8 +388,6 @@
                (send self :move-hand l/r finger-av 1000)
                (when (> (aref finger-av 0) 45)
                  ;; if cylindrical and spherical grasp, move other gripper joints
-                 (pushback (send robot :angle-vector) avs)
-                 (send robot l/r :gripper-x :joint-angle 120)
                  (pushback (send robot :angle-vector) avs)
                  (send robot l/r :gripper-p :joint-angle 0)
                  (pushback (send robot :angle-vector) avs)
@@ -407,7 +428,7 @@
           ;;       (and (or
           ;;              (and (< (aref finger-av 0) 45) (< (aref finger-av 1) 80))
           ;;              (and (>= (aref finger-av 0) 45) (< (aref finger-av 1) 155)))
-          ;;            (> (send self :get-finger-load arm) 0.55)))
+          ;;            (< (send self :get-finger-load arm) -0.55)))
           (setq pinchingp t)
           (send self :spin-once)
           (cond ((eq type :suction) suctioningp)
@@ -445,7 +466,8 @@
     (unless (or (eq arm :rarm) (eq arm :larm))
       (error ":wait-interpolation-until set arm for first arg~%"))
     (let (conds r-init-flex l-init-flex init-load r-flex l-flex
-                finger-load prismatic-load flex-thre-offset)
+                finger-load prismatic-load flex-thre-offset
+                r-proximity l-proximity)
       (setq r-init-flex (send self :get-finger-flex arm :right))
       (setq l-init-flex (send self :get-finger-flex arm :left))
       (setq init-load (send self :get-finger-load arm))
@@ -498,7 +520,7 @@
         (pushback
           #'(lambda ()
               (setq finger-load (send self :get-finger-load arm))
-              (if (> finger-load (+ init-load 0.01))
+              (if (< finger-load (- init-load 0.01))
                 (progn
                   (ros::ros-info "[:wait-interpolation-until] Detected finger loaded load: ~a"
                                  finger-load)
@@ -510,7 +532,7 @@
         (pushback
           #'(lambda ()
               (setq finger-load (send self :get-finger-load arm))
-              (if (< finger-load (- init-load 0.01))
+              (if (> finger-load (+ init-load 0.01))
                 (progn
                   (ros::ros-info "[:wait-interpolation-until] Detected finger unloaded load: ~a"
                                  finger-load)
@@ -526,6 +548,19 @@
                 (progn
                   (ros::ros-info "[:wait-interpolation-until] Detected prismatic loaded load: ~a"
                                  prismatic-load)
+                  t)
+                nil))
+          conds))
+      (when (member :finger-proximity args)
+        (ros::ros-info "[:wait-interpolation-until] Prepare for finger proximity")
+        (pushback
+          #'(lambda ()
+              (setq r-proximity (send self :get-proximity arm :right))
+              (setq l-proximity (send self :get-proximity arm :left))
+              (if (> (max r-proximity l-proximity) proximity-threshold-)
+                (progn
+                  (ros::ros-info "[:wait-interpolation-until] Detected finger proximity. r: ~a, l: ~a"
+                                 r-proximity l-proximity)
                   t)
                 nil))
           conds))
@@ -560,11 +595,10 @@
     (&optional (arm :arms))
     (send self :spin-once)
     (dolist (l/r (if (eq arm :arms) (list :rarm :larm) (list arm)))
-      (let ((hash-table (make-hash-table)))
-        (sethash :left hash-table (send self :get-proximity l/r :left :raw t))
-        (sethash :right hash-table (send self :get-proximity l/r :right :raw t))
-        (sethash :middle hash-table (send self :get-proximity l/r :middle :raw t))
-        (sethash l/r proximity-init-values- hash-table))
+      (sethash :left (gethash l/r proximity-init-values-)
+               (send self :get-proximity l/r :left :raw t))
+      (sethash :right (gethash l/r proximity-init-values-)
+               (send self :get-proximity l/r :right :raw t))
       ;; TODO: decide proper threshold 100 -> ???
       (setq proximity-threshold- 100))))
 
@@ -583,13 +617,13 @@
          (list :larm
                (cons :group-name "left_arm")
                (cons :target-link
-                     (send self :search-link-from-name "left_gripper_vacuum_pad"))
+                     (send self :search-link-from-name "left_gripper_pad_with_base"))
                (cons :joint-list (send robot :larm :joint-list)))
          (list :arms
                (cons :group-name "both_arms")
                (cons :target-link
                      (list
-                       (send self :search-link-from-name "left_gripper_vacuum_pad")
+                       (send self :search-link-from-name "left_gripper_pad_with_base")
                        (send self :search-link-from-name "right_gripper_pad_with_base")))
                (cons :joint-list (append (send robot :larm :joint-list)
                                          (send robot :rarm :joint-list)))))))
