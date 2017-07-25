@@ -1,7 +1,0 @@
-book
-box
-clamshell
-cylinder
-deformable
-other
-wrapped
