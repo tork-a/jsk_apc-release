@@ -2,6 +2,37 @@
 Changelog for package jsk_apc2016_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.0 (2017-07-24)
+------------------
+* sort target cpi decomposer by cloud_size
+* set smaller queue_size for target cpi decomposer
+* set smaller queue_size for label cpi decomposer
+* resize input of cpi decomposer for largest object selection
+* Contributors: Shingo Kitagawa
+
+3.3.0 (2017-07-15)
+------------------
+* add use_topic and input_candidates args
+* replace bg_label by ignore_labels
+* ad ignore_labels in label_to_cpi
+* Fix fcn model_file param name
+* add USE_PCA argment in object_segmentation_3d.launch
+* Contributors: Kentaro Wada, Naoya Yamaguchi, Shingo Kitagawa
+
+3.2.0 (2017-07-06)
+------------------
+* update candidates for segmentation via topic
+* Contributors: Shingo Kitagawa
+
+3.1.0 (2017-06-30)
+------------------
+* update visulization methods
+* use fcn in stow task recognition pipeline
+* Make label_names.yml as just a name list
+* add jsk_gui_msgs to jsk_apc_common
+* Pass chainermodel name to correct param
+* Contributors: Kei Okada, Kentaro Wada, Shingo Kitagawa, Shun Hasegawa
+
 3.0.3 (2017-05-18)
 ------------------
 
