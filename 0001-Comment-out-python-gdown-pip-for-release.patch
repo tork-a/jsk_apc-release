@@ -1,4 +1,4 @@
-From 6e6d59e029db0f2c3af999206633e62b487aace8 Mon Sep 17 00:00:00 2001
+From 89da07f3ce4f46da09cbbaa36ed8a994be091713 Mon Sep 17 00:00:00 2001
 From: Kentaro Wada <www.kentaro.wada@gmail.com>
 Date: Mon, 8 May 2017 17:19:18 +0900
 Subject: [PATCH] Comment out python-gdown-pip for release
@@ -20,5 +20,5 @@ index e8ee701..c1859d7 100644
    <run_depend>python-opencv</run_depend>
    <run_depend>python-progressbar</run_depend>
 -- 
-1.9.1
+1.9.0
 
