@@ -1,13 +1,18 @@
 <launch>
   <arg name="use_fcn" default="true" />
   <arg name="stereo" default="true" />
+  <arg name="load_driver" default="true" />
 
   <!-- hand mounted camera -->
   <group if="$(arg stereo)">
-    <include file="$(find jsk_arc2017_baxter)/launch/setup/include/stereo_astra_hand.launch" />
+    <include file="$(find jsk_arc2017_baxter)/launch/setup/include/stereo_astra_hand.launch">
+      <arg name="load_driver" value="$(arg load_driver)" />
+    </include>
   </group>
   <group unless="$(arg stereo)">
-    <include file="$(find jsk_arc2017_baxter)/launch/setup/include/astra_hand.launch" />
+    <include file="$(find jsk_arc2017_baxter)/launch/setup/include/astra_hand.launch">
+      <arg name="load_driver" value="$(arg load_driver)" />
+    </include>
   </group>
 
   <!-- weight scale -->
@@ -97,7 +102,6 @@
     <node name="weight_candidates_refiner"
           pkg="jsk_arc2017_common" type="weight_candidates_refiner.py">
       <remap from="~input/candidates" to="candidates_publisher/output/candidates" />
-      <rosparam ns="object_weights" file="$(find jsk_arc2017_common)/data/objects/weight.yaml" />
       <rosparam>
         approximate_sync: true
         queue_size: 10
@@ -177,7 +181,6 @@
     <node name="weight_candidates_refiner"
           pkg="jsk_arc2017_common" type="weight_candidates_refiner.py">
       <remap from="~input/candidates" to="candidates_publisher/output/candidates" />
-      <rosparam ns="object_weights" file="$(find jsk_arc2017_common)/data/objects/weight.yaml" />
       <rosparam>
         approximate_sync: true
         queue_size: 10
