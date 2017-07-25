@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import jsk_arc2017_common
 from jsk_arc2017_common.msg import WorkOrder
 from jsk_arc2017_common.msg import WorkOrderArray
 import json
 import operator
 import os.path as osp
+import random
 import rospy
 
 
@@ -48,28 +50,70 @@ class WorkOrderPublisher(object):
         for i, size_id in enumerate(sorted_size_ids):
             self.cardboard_ids[size_id] = 'ABC'[i]
 
-        larm_orders = orders[:2]
-        rarm_orders = orders[2:3]
-        self.larm_msg = self._generate_msg(larm_orders)
-        self.rarm_msg = self._generate_msg(rarm_orders)
+        publish_orders = self._generate_publish_orders(orders)
+
+        # first: sort by object weight
+        object_weights = jsk_arc2017_common.get_object_weights()
+        left_sorted_orders = sorted(
+            publish_orders['left_hand'],
+            key=lambda order: object_weights[order['item']])
+        right_sorted_orders = sorted(
+            publish_orders['right_hand'],
+            key=lambda order: object_weights[order['item']])
+
+        # second: sort by object graspability
+        graspability = jsk_arc2017_common.get_object_graspability()
+        left_sorted_orders = sorted(
+            left_sorted_orders,
+            key=lambda order: graspability[order['item']]['suction'])
+        right_sorted_orders = sorted(
+            right_sorted_orders,
+            key=lambda order: graspability[order['item']]['suction'])
+
+        self.larm_msg = self._generate_msg(left_sorted_orders)
+        self.rarm_msg = self._generate_msg(right_sorted_orders)
         self.larm_pub = rospy.Publisher(
             '~left_hand', WorkOrderArray, queue_size=1)
         self.rarm_pub = rospy.Publisher(
             '~right_hand', WorkOrderArray, queue_size=1)
         rospy.Timer(rospy.Duration(1.0 / self.rate), self._publish_msg)
 
+    def _generate_publish_orders(self, orders):
+        publish_orders = {
+            'left_hand': [],
+            'right_hand': []
+        }
+
+        for order in orders:
+            size_id = order['size_id']
+            for item in order['contents']:
+                bin_ = self.item_location[item]
+                order = {
+                    'item': item,
+                    'bin': bin_,
+                    'box': self.cardboard_ids[size_id]
+                }
+                if bin_ == 'A':
+                    publish_orders['left_hand'].append(order)
+                elif bin_ == 'C':
+                    publish_orders['right_hand'].append(order)
+                else:  # bin_ == 'B'
+                    publish_orders['left_hand'].append(order)
+                    publish_orders['right_hand'].append(order)
+
+        return publish_orders
+
     def _generate_msg(self, orders):
         order_msgs = []
         for order in orders:
-            size_id = order['size_id']
-            for target_item in order['contents']:
-                if target_item in self.abandon_items:
-                    continue
-                order_msg = WorkOrder()
-                order_msg.bin = self.item_location[target_item]
-                order_msg.item = target_item
-                order_msg.box = self.cardboard_ids[size_id]
-                order_msgs.append(order_msg)
+            target_item = order['item']
+            if target_item in self.abandon_items:
+                continue
+            order_msg = WorkOrder()
+            order_msg.bin = order['bin']
+            order_msg.item = target_item
+            order_msg.box = order['box']
+            order_msgs.append(order_msg)
         order_array_msg = WorkOrderArray()
         order_array_msg.orders = order_msgs
         return order_array_msg
