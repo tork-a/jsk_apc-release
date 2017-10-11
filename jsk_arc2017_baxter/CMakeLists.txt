@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(jsk_arc2017_baxter)
 
+# force_proximity_ros can not be found on build.ros.org
+find_package(force_proximity_ros QUIET)
+if(force_proximity_ros_FOUND)
+  set(FORCE_PROXIMITY_ROS_PKG force_proximity_ros)
+else()
+  message(WARNING "COULD NOT BE FOUND force_proximity_ros PACKAGE")
+endif()
+
 find_package(catkin REQUIRED COMPONENTS
-    force_proximity_ros
+    ${FORCE_PROXIMITY_ROS_PKG}
     message_generation
     roseus
     std_msgs
@@ -39,7 +47,7 @@ add_action_files(
 generate_messages(
     DEPENDENCIES
     std_msgs
-    force_proximity_ros
+    ${FORCE_PROXIMITY_ROS_PKG}
     actionlib_msgs
 )
 
@@ -56,7 +64,7 @@ generate_messages(
 catkin_package(
     CATKIN_DEPENDS
     message_runtime
-    force_proximity_ros
+    ${FORCE_PROXIMITY_ROS_PKG}
     std_msgs
     baxter_core_msgs
     hardware_interface
@@ -73,6 +81,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include
+  ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
 
@@ -91,6 +100,7 @@ add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/robots/baxter.urdf
   COMMAND ROS_PACKAGE_PATH=${PROJECT_SOURCE_DIR}:$ENV{ROS_PACKAGE_PATH} rosrun xacro xacro baxter.xacro > baxter.urdf
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/robots
   DEPENDS ${PROJECT_SOURCE_DIR}/robots/baxter.xacro
+          ${PROJECT_SOURCE_DIR}/robots/left_vacuum_gripper.xacro
           ${PROJECT_SOURCE_DIR}/robots/right_vacuum_gripper.xacro)
 # get collada-dom version
 find_package(PkgConfig)
@@ -131,12 +141,13 @@ if(CATKIN_ENABLE_TESTING)
   add_rostest(test/test_pick_main.test)
   add_rostest(test/test_stow_main.test)
   add_rostest(test/test_arc_interface.test)
-  add_rostest(test/test_pick_arc_interface.test)
-  add_rostest(test/test_stow_arc_interface.test)
+  add_rostest(test/test_stow_interface.test)
   find_package(jsk_tools REQUIRED)
   find_package(jsk_apc2016_common REQUIRED)
   if(${jsk_tools_VERSION} VERSION_GREATER 2.0.13)
     jsk_tools_add_shell_test(COMMAND "rosrun jsk_apc2016_common euslint ${PROJECT_SOURCE_DIR}/euslisp")
     jsk_tools_add_shell_test(COMMAND "rosrun jsk_apc2016_common euslint ${PROJECT_SOURCE_DIR}/test")
   endif()
+  find_package(jsk_arc2017_common REQUIRED)
+  add_rostest(test/test_pick_interface.test)
 endif()
