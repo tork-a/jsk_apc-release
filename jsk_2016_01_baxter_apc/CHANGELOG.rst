@@ -2,6 +2,57 @@
 Changelog for package jsk_2016_01_baxter_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.2 (2017-10-11)
+------------------
+
+4.1.1 (2017-10-10)
+------------------
+* add object-index key in pick-object-in-order-bin
+* use avs-raw with :fast in pick-object
+* update shelf marker
+* Fix missing include files
+  I got `No such file or directory "ros/ros.h"`.
+* Move installation for jsk_2016_01_baxter_apc to doc
+* Add light meshes
+* Remove unnecessary meshes
+* Contributors: Kentaro Wada, Shingo Kitagawa, Shun Hasegawa
+
+4.1.0 (2017-08-12)
+------------------
+* use transformable_markers for kiva_pod
+* move camera launch in setup launch
+* Update LICENSE
+* Move library to euslisp/lib for jsk_2015_05_baxter_apc
+* Move library to euslisp/lib for jsk_2016_01_baxter_apc
+* Contributors: Kentaro Wada, Shingo Kitagawa
+
+4.0.9 (2017-07-29)
+------------------
+
+4.0.8 (2017-07-29)
+------------------
+
+4.0.7 (2017-07-28)
+------------------
+
+4.0.6 (2017-07-28)
+------------------
+
+4.0.5 (2017-07-28)
+------------------
+
+4.0.4 (2017-07-27)
+------------------
+
+4.0.3 (2017-07-27)
+------------------
+
+4.0.2 (2017-07-27)
+------------------
+
+4.0.1 (2017-07-26)
+------------------
+
 4.0.0 (2017-07-24)
 ------------------
 * Use baxter_simple.urdf in jsk_2016_01_baxter_apc baxterrgv5.xacro
