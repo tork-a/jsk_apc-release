@@ -60,6 +60,12 @@ class CalibRequiredJointController(JointPositionController):
         # Change to wheel mode
         self.__set_angle_limits(0, 0)
         self.set_torque_limit(self.calib_torque_limit)
+        self.__set_speed_wheel(0.0)
+        # release torque by disabling it
+        self.set_torque_enable(False)
+        rospy.sleep(0.2)
+        self.set_torque_enable(True)  # re-enable it
+        rospy.sleep(0.2)
         if self.flipped:
             self.__set_speed_wheel(self.calib_speed)
         else:
@@ -74,13 +80,13 @@ class CalibRequiredJointController(JointPositionController):
                 pass
             rate.sleep()
         self.__set_speed_wheel(0.0)
-        self.set_torque_enable(False)
         if self.is_multiturn:
             # Change to multiturn mode
             self.__set_angle_limits(4095, 4095)
         else:
             # Change to previous mode
             self.__set_angle_limits(prev_limits['min'], prev_limits['max'])
+        self.set_torque_enable(False)
         self.set_speed(self.joint_speed)
         if self.torque_limit is not None:
             self.set_torque_limit(self.torque_limit)
