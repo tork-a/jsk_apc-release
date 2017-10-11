@@ -2,6 +2,53 @@
 Changelog for package jsk_apc2016_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.2 (2017-10-11)
+------------------
+
+4.1.1 (2017-10-10)
+------------------
+* Fix typo: bin/euslint -> scripts/euslint
+* Contributors: Kentaro Wada
+
+4.1.0 (2017-08-12)
+------------------
+* Visualize target0 (index 0 object)
+* Contributors: Kentaro Wada
+
+4.0.9 (2017-07-29)
+------------------
+
+4.0.8 (2017-07-29)
+------------------
+
+4.0.7 (2017-07-28)
+------------------
+
+4.0.6 (2017-07-28)
+------------------
+
+4.0.5 (2017-07-28)
+------------------
+
+4.0.4 (2017-07-27)
+------------------
+
+4.0.3 (2017-07-27)
+------------------
+* Fixes for unknown objects
+* Contributors: Kentaro Wada
+
+4.0.2 (2017-07-27)
+------------------
+
+4.0.1 (2017-07-26)
+------------------
+* Fix line number in euslint
+* Install euslint to global bin
+* Make it work grasped_region_classifier with resized image
+* loosen synchronizer of cpi_decomposer label
+* Contributors: Kentaro Wada, Shingo Kitagawa
+
 4.0.0 (2017-07-24)
 ------------------
 * sort target cpi decomposer by cloud_size

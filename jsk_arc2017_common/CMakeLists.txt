@@ -15,6 +15,8 @@ catkin_python_setup()
 
 add_message_files(
     FILES
+    Content.msg
+    ContentArray.msg
     Weight.msg
     WeightStamped.msg
     WorkOrder.msg
@@ -70,6 +72,7 @@ add_custom_target(install_data ALL COMMAND ${PROJECT_SOURCE_DIR}/scripts/install
 #############
 
 if(CATKIN_ENABLE_TESTING)
+  catkin_add_nosetests(python/jsk_arc2017_common/tests)
   find_package(roslint REQUIRED)
   roslint_python()
   roslint_add_test()

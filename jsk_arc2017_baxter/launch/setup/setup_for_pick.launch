@@ -3,10 +3,14 @@
   <arg name="stereo" default="true" />
   <arg name="load_driver" default="true" />
 
+  <!-- get machine tag -->
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/baxter.machine" />
+
   <!-- hand mounted camera -->
   <group if="$(arg stereo)">
     <include file="$(find jsk_arc2017_baxter)/launch/setup/include/stereo_astra_hand.launch">
       <arg name="load_driver" value="$(arg load_driver)" />
+      <arg name="pick" value="true" />
     </include>
   </group>
   <group unless="$(arg stereo)">
@@ -91,6 +95,14 @@
         error: 10.0
       </rosparam>
     </node>
+
+    <include file="$(find jsk_arc2017_baxter)/launch/setup/include/grasped_region_classifier.launch" >
+      <arg name="INPUT_CANDIDATES" value="weight_candidates_refiner/output/candidates/picked" />
+      <arg name="INPUT_CLOUD" value="extract_indices_target_bin/output" />
+      <arg name="INPUT_INFO" value="left/rgb/camera_info" />
+      <arg name="INPUT_PROBA_IMAGE" value="fcn_object_segmentation/output/proba_image" />
+      <arg name="NODELET_MANAGER" value="left/left_nodelet_manager" />
+    </include>
   </group>
   <!-- for right hand camera -->
   <group ns="right_hand_camera">
@@ -146,6 +158,14 @@
         error: 10.0
       </rosparam>
     </node>
+
+    <include file="$(find jsk_arc2017_baxter)/launch/setup/include/grasped_region_classifier.launch" >
+      <arg name="INPUT_CANDIDATES" value="weight_candidates_refiner/output/candidates/picked" />
+      <arg name="INPUT_CLOUD" value="extract_indices_target_bin/output" />
+      <arg name="INPUT_INFO" value="left/rgb/camera_info" />
+      <arg name="INPUT_PROBA_IMAGE" value="fcn_object_segmentation/output/proba_image" />
+      <arg name="NODELET_MANAGER" value="left/left_nodelet_manager" />
+    </include>
   </group>
 
 </launch>
