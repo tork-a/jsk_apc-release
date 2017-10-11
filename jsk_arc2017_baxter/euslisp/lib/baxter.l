@@ -2,9 +2,9 @@
 
 ;; vim: set ft=lisp:
 
-(require "package://jsk_2015_05_baxter_apc/euslisp/jsk_2015_05_baxter_apc/util.l")
+(require "package://jsk_2015_05_baxter_apc/euslisp/lib/util.l")
+(require :baxter "package://jsk_arc2017_baxter/robots/baxter.l")
 (require "package://baxtereus/baxter-util.l")
-(require "package://jsk_arc2017_baxter/robots/baxter.l")
 
 (unless (find-package "JSK_ARC2017_BAXTER")
   (make-package "JSK_ARC2017_BAXTER"))
@@ -61,6 +61,17 @@
     (send self :rarm-palm-endpoint :translate #f(30 0 0) :local)
     (send self :larm-palm-endpoint :translate #f(30 0 0) :local)
     )
+
+  (:arc-reset-pose
+    (&optional (arm :arms))
+    (let ((arms (if (eq arm :arms) (list :larm :rarm) (list arm))))
+      (dolist (arm arms)
+        (send self :untuck-pose arm)
+        (send self arm :move-end-pos (float-vector 0 (if (eq arm :larm) 300 -300) 0) :world)
+        (send self :rotate-wrist arm (if (eq arm :larm) 90 -90) :relative nil)
+        ))
+    (send *baxter* :angle-vector))
+
   (:rarm-palm-endpoint
     (&rest args)
     (send* self :right_gripper_palm_endpoint_lk args))
@@ -286,7 +297,11 @@
       (setq min-av (send self :angle-vector))
       (send self arm :wrist-r :joint-angle (send self arm :wrist-r :max-angle))
       (setq max-av (send self :angle-vector))
-      (dolist (p '(0 0.25 0.5 0.75 1))
-        (pushback (midpoint p min-av max-av) pose-candidates))
+      (let ((sampling-ratios (list 0 0.25 0.5 0.75 1)))
+        (when (eq arm :rarm) (nreverse sampling-ratios))
+        (dolist (p sampling-ratios)
+          (pushback (midpoint p min-av max-av) pose-candidates)
+          )
+        )
       (send self :angle-vector (car pose-candidates))
       (send* self :ik->nearest-pose arm target-coords pose-candidates args))))

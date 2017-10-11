@@ -2,6 +2,90 @@
 Changelog for package jsk_arc2017_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.2 (2017-10-11)
+------------------
+* Create fcn32s.npz symlink by install_data.py
+  In order to avoid error in bloom.
+* Contributors: Kentaro Wada
+
+4.1.1 (2017-10-10)
+------------------
+* Equalize weight_candidates_refiner in jsk_apc to upstream PRs
+* Create ItemData by taking photos
+* Contributors: Kentaro Wada, Shun Hasegawa
+
+4.1.0 (2017-08-12)
+------------------
+* Warn about nan value
+* Publish nan value when unstable by EkEwIDriver
+* use 1B2 instead of K3 for test
+* use sample_pick_task json for sample launch
+* fix bug in cardboard ids
+  1A5 is bigger than 1B2, but 1A5 is never used for cardboard_C and 1B2 for
+  cardboard_B
+* Contributors: Kentaro Wada, Shingo Kitagawa
+
+4.0.9 (2017-07-29)
+------------------
+* Fix typo in visualize_object.py
+* Contributors: Kentaro Wada
+
+4.0.8 (2017-07-29)
+------------------
+
+4.0.7 (2017-07-28)
+------------------
+* fix visualize_object
+* Contributors: Kentaro Wada
+
+4.0.6 (2017-07-28)
+------------------
+
+4.0.5 (2017-07-28)
+------------------
+
+4.0.4 (2017-07-27)
+------------------
+
+4.0.3 (2017-07-27)
+------------------
+* Set default model
+* change suction graspability of avery_binder
+* fix nosetest path in jsk_arc2017_common
+* Show with red color for unknown  objects in list_label_names
+* Add get_known_object_names and its tests
+* Fixes for unknown objects
+* Use fcn32s.npz in models dir
+* Support unknown objects disclosed just before the challenge
+  This requires https://github.com/start-jsk/jsk_apc/issues/2414#issuecomment-317935277
+* Contributors: Kentaro Wada, Naoya Yamaguchi, Shingo Kitagawa
+
+4.0.2 (2017-07-27)
+------------------
+* change pinch graspability of white_facecloth
+* publish bin_contents in json_saver
+* add Content and ContentArray msg
+* change reynolds wrap graspability
+* Contributors: Naoya Yamaguchi, Shingo Kitagawa
+
+4.0.1 (2017-07-26)
+------------------
+* Reset pub_imgs
+* Classify object in grasped region
+* fix apply_mask_to_proba_image.py:32:5: E303 too many blank lines (2) ?
+* create apply_mask_to_proba_image.py
+* create image_buffer.py
+* 148000 iterations with Datasetv3
+  ```
+  % ./evaluate.py logs/fcn32s_CFG-009_DATASET-v3_OPTIMIZER-Adam_WEIGHT_DECAY-0.0005_LR-1e-05_MAX_ITERATION-150000_VCS-c0bff11_TIME-20170723-112528/models/fcn32s_dataset_v3_cfg009_20170724.npz
+  Accuracy: 93.7259
+  AccClass: 92.3574
+  Mean IoU: 84.6101
+  Fwav Acc: 88.3183
+  ```
+* pinch graspability 2 -> 3
+* Contributors: Kei Okada, Kentaro Wada, Naoya Yamaguchi, Yuto Uchimi
+
 4.0.0 (2017-07-24)
 ------------------
 * Fix workorder in shared shelf-bin (B)
