@@ -2,6 +2,53 @@
 Changelog for package jsk_travis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.4.33 (2017-08-30)
+-------------------
+* Fix typo about docker pulling DOCKER_IMAGE_JENKINS (`#346 <https://github.com/jsk-ros-pkg/jsk_travis/issues/346>`_)
+* Contributors: Kentaro Wada
+
+0.4.32 (2017-08-29)
+-------------------
+* Run docker pull to get latest docker image if possible (`#345 <https://github.com/jsk-ros-pkg/jsk_travis/issues/345>`_)
+* Support sudo: false of Travis option (`#344 <https://github.com/jsk-ros-pkg/jsk_travis/issues/344>`_)
+* Documentize NOT_TEST_INSTALL (`#343 <https://github.com/jsk-ros-pkg/jsk_travis/issues/343>`_)
+* Support testing on lunar (`#342 <https://github.com/jsk-ros-pkg/jsk_travis/issues/342>`_)
+* Contributors: Kentaro Wada
+
+0.4.31 (2017-08-19)
+-------------------
+* use http instaed of https (`#341 <https://github.com/jsk-ros-pkg/jsk_travis/issues/341>`_)
+* Contributors: Kei Okada
+
+0.4.30 (2017-08-06)
+-------------------
+* job_name = 'jenkins+ job_name + TRAVIS_REPO_SLUG' (`#340 <https://github.com/jsk-ros-pkg/jsk_travis/issues/340>`_)
+* Contributors: Kei Okada
+
+0.4.29 (2017-08-05)
+-------------------
+* filename must be less than 255 length (`#339 <https://github.com/jsk-ros-pkg/jsk_travis/issues/339>`_)
+* Contributors: Kei Okada
+
+0.4.28 (2017-08-05)
+-------------------
+* run travis without rosdep -r (`#337 <https://github.com/jsk-ros-pkg/jsk_travis/issues/337>`_)
+  * add -v rosdep options
+  * add ros_tutorials to workspece for test
+  * run travis without rosdep -r
+
+* to run docker, we do not need -ti option (`#338 <https://github.com/jsk-ros-pkg/jsk_travis/issues/338>`_)
+  -i, --interactive             Keep STDIN open even if not attached
+  -t, --tty                     Allocate a pseudo-TTY
+* Contributors: Kei Okada
+
+0.4.27 (2017-07-18)
+-------------------
+* apt-get install patch command (`#332 <https://github.com/jsk-ros-pkg/jsk_travis/issues/332>`_ )
+* Support ROSDEP_ADDITIONAL_OPTIONS on Jenkins (`#333 <https://github.com/jsk-ros-pkg/jsk_travis/issues/333>`_)
+* use language: c++ , to avoid custom python (`#334 <https://github.com/jsk-ros-pkg/jsk_travis/issues/334>`_)
+* Contributors: Kei Okada, Kentaro Wada
+
 0.4.26 (2017-07-01)
 -------------------
 * Correct exit status in rosdep-install.sh (`#331 <https://github.com/jsk-ros-pkg/jsk_travis/issues/331>`_ )
