@@ -1,5 +1,11 @@
 <launch>
 
+  <arg name="rgv5" value="false" />
+
+  <!-- hand mounted camera -->
+  <include file="$(find jsk_2016_01_baxter_apc)/launch/include/astra_hand.launch" unless="$(arg rgv5)"/>
+  <include file="$(find jsk_2016_01_baxter_apc)/launch/include/astra_hand_rgv5.launch" if="$(arg rgv5)"/>
+
   <!-- Launch pipeline for 3D object segmentation. -->
   <!-- for left hand camera -->
   <arg name="manager_left" value="left_hand_camera_nodelet_manager" />
@@ -7,7 +13,7 @@
     <node name="bbox_array_to_bbox"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl_utils/BoundingBoxArrayToBoundingBox $(arg manager_left)">
-      <remap from="~input" to="/publish_bin_boxes/output" />
+      <remap from="~input" to="/transformable_bin_markers/output/boxes" />
       <rosparam>
         index: 0
       </rosparam>
@@ -51,7 +57,7 @@
     <node name="bbox_array_to_bbox"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl_utils/BoundingBoxArrayToBoundingBox $(arg manager_right)">
-      <remap from="~input" to="/publish_bin_boxes/output" />
+      <remap from="~input" to="/transformable_bin_markers/output/boxes" />
       <rosparam>
         index: 2
       </rosparam>
