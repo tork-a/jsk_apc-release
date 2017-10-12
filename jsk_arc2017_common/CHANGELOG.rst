@@ -2,6 +2,9 @@
 Changelog for package jsk_arc2017_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.3 (2017-10-12)
+------------------
+
 4.1.2 (2017-10-11)
 ------------------
 * Create fcn32s.npz symlink by install_data.py
