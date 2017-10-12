@@ -2,6 +2,314 @@
 Changelog for package jsk_arc2017_baxter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.3 (2017-10-12)
+------------------
+
+4.1.2 (2017-10-11)
+------------------
+
+4.1.1 (2017-10-10)
+------------------
+* [jsk_arc2017_baxter/euslisp/lib/baxter-interface.l] support ungrasp condition in :wait-interpolation-until.
+* Fix missing include files
+  I got `No such file or directory "ros/ros.h"`.
+* Revert "Use and_scale_ros and weight_candidates_refiner of jsk_perception"
+  This reverts commit 124dbbe62bd03d49a3d4464df6f42844d761912d.
+* Don't change grasp-style- if next grasp style is nil
+* Add ros-info when ungrasp is detected
+* Detect ungrasp by scale
+* Use and_scale_ros and weight_candidates_refiner of jsk_perception
+* Don't trust pressure sensor again
+* Copy spin-off times from pick to stow
+* Fix release motion of pinch in pick
+* Spin off objects even if graspingp is nil in stow
+* Add machine tag in setup_for_stow
+* Make timeout longer in checking gripper state
+* Re-trust pressure sensor value on picking (`#2562 <https://github.com/start-jsk/jsk_apc/issues/2562>`_)
+  * Re-trust pressure sensor value on picking
+  * fix
+  * fix
+* Add light meshes
+* Add missing build depend
+* Update calib_required_joint_controller.py
+* Change mode directly after detecting limit
+* Resolve overload before prismatic calib
+* Contributors: Kentaro Wada, Masaki Murooka, Shun Hasegawa
+
+4.1.0 (2017-08-12)
+------------------
+* Fix rotate wrist ik for :rarm (inverse of :larm)
+  This solves problem reported at https://github.com/start-jsk/jsk_apc/issues/2560
+* Re-trust pressure sensor value on picking
+* Make sanity script faster
+* Fix state_server for use of only right/left arm
+* Use :gripper-x
+* Use IK to decide prismatic joint angle
+* Fix indent
+* Use random to place object to :c
+* Tune spin-off parameters
+* Cannot trust prismatic load
+* Don't trust too much the prismatic load
+* No need offset by using prismatic
+* Use prismatic IK for suction picking
+* Use prismatic joint as much as possible
+  This reduces collision of arm to shelf, and load to the cables of
+  cameras.
+* Revert "Fix offset in z axis while picking"
+  This reverts commit 50baa62bd8009f2b4127c5fdd1afd4214e9468cd.
+* Make sure hand is inside of bin/tote
+* Fix offset in z axis while picking
+  -330 is too large..
+* Fix prepose of picking inside the bin
+* Fix comment in :pick-object
+* Update pick.rviz
+* Refactor pick.launch
+* Revert "No need avoid-shelf-pose using moveit"
+  This reverts commit ae2ff39e5b8d2cdf4757fcf5aa07b790d89d9ccb.
+* Launch arduino/dxl/scales on baxter-c2
+* Always check all gripper joints
+* Add script for sanity check of gripper_v6
+* Enable sanity check of action servers
+* No need avoid-shelf-pose using moveit
+* Fix for initial value of pick-result
+* Larger workspace
+* pick-res -> pick-result
+* Change to :grasp-succeeded, :grasp-failed and :ik-failed
+* Introduce :grasp-fail and :grasp-succeed
+* Increase pressure sensor frequency
+* Don't trust pressure sensor in final check
+* Change some 'graspingp' to 'pick-res' to allow :ik-fail
+* Filter pressure sensor when graspingp is nil
+* Make eus model loading faster
+* Re-calibrate left finger yaw joint
+* Use same rvizconfig for pick and stow
+* Fix for not finding force_proximity_ros on build.ros.org
+* Move library to euslisp/lib for jsk_2015_05_baxter_apc
+* Move library to euslisp/lib for jsk_2016_01_baxter_apc
+* Use unless
+* Add info message of obj-pos
+* Use end-coords-interpolation in picking
+* Run sanity check before the launch of the pick.launch
+* Use stderr
+* Run sudo because it is required in force_recognize_usb_devices
+* Speak before approaching the picking target obj
+* Speak with more clear sentense
+* Add script to forcely recognize usbs
+* Fix for euslint
+* add hyphen in slot variables and remove unused ones
+* set graspingp as local variable
+* Open fingers when placing
+* Add moveit workspace scene
+* Fix permission of arc-interface.l
+* Stop suction while moving fingers
+* Add :arc-reset-pose as faster reset-pose than :fold-pose-back
+* Use axis camera to record baxter motion
+* add damping to gripper joints
+* add baxter-init function
+* Speak more
+* Fix renamed test files
+* Speak the target object name before picking
+* Fix test
+* Organize test files for eus
+* Add speak interface to baxter-interface
+* fix unset local variables
+* set target-index as local variable
+* Fix fail count
+* Update pick.rviz
+* Contributors: Kentaro Wada, Shingo Kitagawa, Shun Hasegawa
+
+4.0.9 (2017-07-29)
+------------------
+* Adjust left arm pressure threshold for Pick final
+* Adjust cardboard for Pick final
+* Fix sanity script for weight_candidates_refiner
+* Contributors: Kentaro Wada
+
+4.0.8 (2017-07-29)
+------------------
+* Fix gripper rotation after approach
+* Loosen gripper rotation in suction
+* update place object motion
+* remove unused attached object scene
+* modify rackboard leg scene
+* move object in bin and change condition
+* Fix midpoints
+* Don't move arm in first suction
+* Fix offset and add midpoints
+* Use :rotate-wrist-ik
+* Don't move arm in second suction
+* Check sanity of system (topics/nodes) by script
+* add local-variable candidate-labels
+* add forgotten remove nil
+* set order as local variable
+* use moveit for place in cardboard c
+* fix cardboard c offset
+* Contributors: Kentaro Wada, Shingo Kitagawa, Shun Hasegawa
+
+4.0.7 (2017-07-28)
+------------------
+* Update cardboard_marker pose
+* place object l/r side
+* Fix target-bin bug in pick (caused by postponed object)
+* Avoid shelf for finger if Ik fails
+* Don't return-object when IK in picking fails
+* Revert "sort largest object by graspability"
+  This reverts commit c586b6c3a8426398638e37f98a1924cc92c35677.
+  Conflicts:
+  jsk_arc2017_baxter/euslisp/lib/arc-interface.l
+* Contributors: Kentaro Wada, Naoya Yamaguchi, Shun Hasegawa
+
+4.0.6 (2017-07-28)
+------------------
+* Update tote_marker.yaml
+* Fix typo in sorting
+* sort largest object by graspability
+* Contributors: Kentaro Wada, Shingo Kitagawa
+
+4.0.5 (2017-07-28)
+------------------
+* Fix fast second suction
+* Fix low pinch
+* Show task duration time by info
+* Use cyan
+* classifier threshold decrease according to runtime
+* ros-debug in check-gripper-state.l
+* Update vacuum threshold
+* Resolve finger collision
+* Fix typos
+* Fix typo
+* check prev-target-obj and return from loop fast
+* return object near center
+* adjust stow task marker
+* fix euslint
+* place object from higher place
+* Fix typo
+* set stowing target-bin considering object volumes
+* Contributors: Kei Okada, Kentaro Wada, Naoya Yamaguchi, Shingo Kitagawa, Shun Hasegawa
+
+4.0.4 (2017-07-27)
+------------------
+* Fix order types param in visualize_json
+* Update hand-eye extrinsic params
+  FIXME: we need different extrinsic params for pick and stow.
+* Fix typo
+* Add info message to :check-near-walls
+* Change yaw angle in corner picking
+* Fix offset of pinch motion
+* Fix reset of fail-count for picking
+* improve :get-next-work-order
+* Contributors: Kentaro Wada, Shingo Kitagawa, Shun Hasegawa
+
+4.0.3 (2017-07-27)
+------------------
+* Adjust astra_hand
+* Fix pinch motion for pick task
+* return area in pick
+* Check launch for fcn seg with all candidates
+* fix bug in get-next-target-bin
+* place object to bin center after pinch (because of IK)
+* Fix bug about :count-limit
+* modify return object in stow
+* pick-interface.l: fix tab->spaces
+* fix test-get-next-target-bin
+* add debug code
+* fix test name in test_arc_interface
+* fix test to pass test
+* Update cardboard_marker.yaml
+* increase count-limit for recognize failure
+* Set target_location in pick.launch
+* improve overlook pose for pick task
+* Set target_location to tote in stow
+* Fix marker locations
+* Make-random-state for euslisp
+* return-from when classifier timeout
+* fix wrong stamp in recognize target object
+* Fixes for unknown objects
+* remove bbox-volume threshold to select target obj
+* Change pinch motion
+* Abort picking when IK before grasping fails
+* Contributors: Kei Okada, Kentaro Wada, Naoya Yamaguchi, Shingo Kitagawa, Shun Hasegawa
+
+4.0.2 (2017-07-27)
+------------------
+* fix bug in classifier results
+* return from :verify-object if classified probability < proba-thre
+* reset return tote offset
+* print ros-info of return object offset
+* improve tote return motion
+* improve decide-place-area and move to arc-interface
+* improve return method and move to arc-interface
+* ros-info-green in grasp-style
+* modify move-arm-body->tote motion
+* place object randomly
+* remove unix::sleep in arc-interface.l
+* return object randomly
+* Skip IK when IK fails in picking
+* Speed up finger motion in suction
+* Fix place object of pinch in pick
+* Improve resolving finger collision
+* Resolve collision between fingers in fold-pose-back
+* make slower place-object motion
+* fix typo in place-object
+* refine place motion for cardboard :a and :b
+* fix typo in place in pick-object
+  I haven't tested with real robot.
+* consider bin_contents in get-next-target-bin
+* set less recognize trial times
+* remove unnecessary setq
+* use stamp just after recognize pose for recognize
+* make task motion faster
+* return-from :pick-object faster when graspingp nil
+* set count-limit 5 for start-picking-fail-count
+* remove unused state in main
+* add count-limit key in task-interface
+* move arm lower when pick object
+* Contributors: Kentaro Wada, Naoya Yamaguchi, Shingo Kitagawa, Shun Hasegawa, Yuto Uchimi
+
+4.0.1 (2017-07-26)
+------------------
+* Fix for euslint
+* Make it work grasped_region_classifier with resized image
+* Fix cluster_indices_to_indices in grasped_region_classifier
+* Restart gripper when gripper response is stopped
+* Respawn when dynamixel driver dies
+* fix typo in place object
+* lift first, and rotate wrist then
+* postpone object in when grasp-style nil
+* Use point indices for grasped region
+* Draw classification result in grasped_region_classifier.launch
+* Update stow.rviz
+* Improve message from data_collection_server
+* Save only image in data_collection_server
+* comment out transform collection
+* when # of scale-cand = 1, check if it exists in order
+* add grasped_region_classifier in stow task
+* Check if scale-candidates in verify-object if scale returns nil
+* Classify object in grasped region
+* Refactoring
+* add grasped_region_classifier to pick task
+* create grasped region classifying pipeline applied context by scale
+* lift object first, and rotate wrist
+* Fix threshold of pressure to detect gloves
+* Don't push gripper to object in pinch
+* finish task when target-bin is nil
+* Update hand-eye extrinsic params
+* Collect data while the pick/stow task (`#2391 <https://github.com/start-jsk/jsk_apc/issues/2391>`_)
+  * Collect data while the pick/stow task
+  * Disable data_collection by default
+  * Make it work
+  * Make it work
+* fix long line to pass euslint
+* remove head_pan waiting in pick_object
+* lift higher to avoid collision b/w obj adn shelf
+* lift object set :rotation-axis t to avoid collision
+* postpone target-obj if it cannot start picking
+* add reset start-picking-fail-count
+* rotate head in proper position
+* filter candidates in select-work-order-in-bin
+* add calib-prismatic-joint state in task state machine
+* Contributors: Kentaro Wada, Shingo Kitagawa, Yuto Uchimi
+
 4.0.0 (2017-07-24)
 ------------------
 * Improve rosoncole output on rviz
