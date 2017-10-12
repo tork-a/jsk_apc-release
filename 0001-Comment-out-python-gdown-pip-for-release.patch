@@ -1,4 +1,4 @@
-From 269114297597ba81414624f24668f13b8ef856be Mon Sep 17 00:00:00 2001
+From 47a2307770aff934138a3bcb8f39dcf63f0f0b7b Mon Sep 17 00:00:00 2001
 From: Kentaro Wada <www.kentaro.wada@gmail.com>
 Date: Mon, 8 May 2017 17:19:18 +0900
 Subject: [PATCH] Comment out python-gdown-pip for release
@@ -8,10 +8,10 @@ Subject: [PATCH] Comment out python-gdown-pip for release
  1 file changed, 1 deletion(-)
 
 diff --git a/package.xml b/package.xml
-index ec69d47..4397719 100644
+index 0ef0ca7..f0a0b5a 100644
 --- a/package.xml
 +++ b/package.xml
-@@ -38,7 +38,6 @@
+@@ -42,7 +42,6 @@
    <run_depend>jsk_rqt_plugins</run_depend>
    <run_depend>message_runtime</run_depend>
    <run_depend>posedetection_msgs</run_depend>
