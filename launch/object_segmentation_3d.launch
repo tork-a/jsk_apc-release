@@ -29,7 +29,8 @@
   </node>
   <group if="$(arg USE_TOPIC)">
     <node name="apply_context_to_label_proba"
-          pkg="jsk_perception" type="apply_context_to_label_probability">
+          pkg="jsk_perception" type="apply_context_to_label_probability"
+          clear_params="true">
       <remap from="~input" to="fcn_object_segmentation/output/proba_image" />
       <remap from="~input/candidates" to="$(arg INPUT_CANDIDATES)" />
       <rosparam>
@@ -39,7 +40,8 @@
   </group>
   <group unless="$(arg USE_TOPIC)">
     <node name="apply_context_to_label_proba"
-          pkg="jsk_perception" type="apply_context_to_label_probability">
+          pkg="jsk_perception" type="apply_context_to_label_probability"
+          clear_params="true">
       <remap from="~input" to="fcn_object_segmentation/output/proba_image" />
       <rosparam>
         use_topic: false
@@ -47,18 +49,19 @@
     </node>
   </group>
 
+  <node name="resize_label"
+        pkg="nodelet" type="nodelet"
+        args="load image_proc/resize $(arg NODELET_MANAGER)">
+    <remap from="image" to="apply_context_to_label_proba/output/label" />
+    <rosparam>
+      interpolation: 0
+      scale_height: 0.5
+      scale_width: 0.5
+    </rosparam>
+  </node>
+
   <!-- label -> cluster indices -->
   <group if="$(arg SELECT_LARGEST)">
-    <node name="resize_label"
-          pkg="nodelet" type="nodelet"
-          args="load image_proc/resize $(arg NODELET_MANAGER)">
-      <remap from="image" to="apply_context_to_label_proba/output/label" />
-      <rosparam>
-        interpolation: 0
-        scale_height: 0.5
-        scale_width: 0.5
-      </rosparam>
-    </node>
     <node name="label_to_cluster_indices"
           pkg="nodelet" type="nodelet"
           args="load jsk_pcl_utils/LabelToClusterPointIndices $(arg NODELET_MANAGER)">
@@ -83,7 +86,8 @@
       <remap from="~input" to="resize_points_publisher_label/output" />
       <remap from="~target" to="label_to_cluster_indices/output" />
       <rosparam>
-        queue_size: 50
+        approximate_sync: true
+        queue_size: 100
         sort_by: -cloud_size
       </rosparam>
     </node>
@@ -156,6 +160,35 @@
       approximate_sync: true
       queue_size: 100
     </rosparam>
+  </node>
+  <node name="poses_to_pose_target0"
+        pkg="jsk_recognition_utils" type="pose_array_to_pose.py">
+    <remap from="~input" to="cluster_indices_decomposer_target/centroid_pose_array" />
+    <rosparam>
+      index: 0
+    </rosparam>
+  </node>
+  <node name="bboxes_to_bbox_target0"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/BoundingBoxArrayToBoundingBox $(arg NODELET_MANAGER)">
+    <remap from="~input" to="cluster_indices_decomposer_target/boxes" />
+    <rosparam>
+      index: 0
+    </rosparam>
+  </node>
+  <node name="cluster_indices_to_indices_target0"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/ClusterPointIndicesToPointIndices $(arg NODELET_MANAGER)">
+    <remap from="~input" to="cluster_indices_decomposer_target/cluster_indices" />
+    <rosparam>
+      index: 0
+    </rosparam>
+  </node>
+  <node name="extract_indices_target0"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ExtractIndices $(arg NODELET_MANAGER)">
+    <remap from="~input" to="resize_points_publisher_target/output" />
+    <remap from="~indices" to="cluster_indices_to_indices_target0/output" />
   </node>
 
 </launch>
