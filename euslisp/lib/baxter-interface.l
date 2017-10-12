@@ -1,9 +1,9 @@
 ;; -*- mode: lisp;-*-
 
-(require "package://baxtereus/baxter-interface.l")
-(require "package://jsk_2015_05_baxter_apc/euslisp/jsk_2015_05_baxter_apc/util.l")
 (require "package://jsk_arc2017_baxter/euslisp/lib/baxter.l")
-(require "package://jsk_2016_01_baxter_apc/euslisp/jsk_2016_01_baxter_apc/util.l")
+(require "package://baxtereus/baxter-interface.l")
+(require "package://jsk_2015_05_baxter_apc/euslisp/lib/util.l")
+(require "package://jsk_2016_01_baxter_apc/euslisp/lib/util.l")
 
 
 (ros::load-ros-manifest "jsk_arc2017_baxter")
@@ -18,7 +18,7 @@
           proximity-threshold-
           hand-actions-
           prismatic-calib-actions-
-          pressure-
+          pressures-
           finger-flex-
           finger-load-
           prismatic-load-
@@ -92,7 +92,7 @@
         (ros::ros-error "~A is not respond" (gethash arm prismatic-calib-actions-))
         (ros::ros-error "You cannot calibrate gripper joint")))
     ;; gripper sensors
-    (setq pressure- (make-hash-table))
+    (setq pressures- (make-hash-table))
     (setq finger-load- (make-hash-table))
     (setq finger-flex- (make-hash-table))
     (setq prismatic-load- (make-hash-table))
@@ -103,6 +103,7 @@
       (ros::subscribe (format nil "/gripper_front/limb/~a/pressure/state" (arm2str arm))
                       std_msgs::Float64
                       #'send self :set-pressure arm
+                      10
                       :groupname groupname)
       (ros::subscribe (format nil "/gripper_front/limb/~a/dxl/finger_tendon_controller/state"
                               (arm2str arm))
@@ -190,7 +191,11 @@
         (cons :joint-names (list "left_gripper_prismatic_joint" "left_gripper_vacuum_pad_joint")))))
   (:set-pressure
     (arm msg)
-    (sethash arm pressure- (send msg :data)))
+    (let ((ps (gethash arm pressures-)))
+      (pushback (send msg :data) ps)
+      (while (> (length ps) 10)
+        (pop ps))
+      (sethash arm pressures- ps)))
   (:set-finger-load
     (arm msg)
     (sethash arm finger-load- (send msg :load)))
@@ -385,17 +390,19 @@
              (let ((finger-av (send self :get-real-finger-av l/r))
                    (prev-av (send robot :angle-vector)) avs)
                (setf (aref finger-av 1) 0)
-               (send self :move-hand l/r finger-av 1000)
-               (when (> (aref finger-av 0) 45)
-                 ;; if cylindrical and spherical grasp, move other gripper joints
-                 (pushback (send robot :angle-vector) avs)
-                 (send robot l/r :gripper-p :joint-angle 0)
-                 (pushback (send robot :angle-vector) avs)
-                 (send robot l/r :gripper-x :joint-angle 0)
-                 (pushback (send robot :angle-vector) avs)
-                 (send robot :angle-vector prev-av)
-                 (send self :angle-vector-sequence-raw avs)
-                 (send self :wait-interpolation)))))))
+               (send self :move-hand l/r finger-av 1000 :wait nil)
+               (if (> (aref finger-av 0) 45)
+                 (progn
+                   ;; if cylindrical and spherical grasp, move other gripper joints
+                   (pushback (send robot :angle-vector) avs)
+                   (send robot l/r :gripper-p :joint-angle 0)
+                   (pushback (send robot :angle-vector) avs)
+                   ;(send robot l/r :gripper-x :joint-angle 0)
+                   ;(pushback (send robot :angle-vector) avs)
+                   (send robot :angle-vector prev-av)
+                   (send self :angle-vector-sequence-raw avs)
+                   (send self :wait-interpolation))
+                 (unix::sleep 1)))))))
   (:gripper-servo-on
     (&optional (arm :arms))
     (dolist (l/r (if (eq arm :arms) (list "left" "right") (list (arm2str arm))))
@@ -410,7 +417,7 @@
         (instance std_msgs::Bool :init :data nil))))
   (:graspingp
     (arm &optional (type :suction))
-    (let (topic finger-av suctioningp pinchingp)
+    (let (topic finger-av p-thre pressures suctioningp pinchingp)
       (if (ros::get-param "/apc_on_gazebo" nil)
         (progn
           (setq topic (format nil "/robot/~a_vacuum_gripper/grasping" (arm-to-str arm)))
@@ -418,11 +425,19 @@
           )
         (progn
           (setq finger-av (send self :get-real-finger-av arm))
+          (setq p-thre
+                (cond
+                  ((eq arm :rarm) rarm-pressure-threshold-)
+                  ((eq arm :larm) larm-pressure-threshold-)))
+          (send self :spin-once)
+          (setq pressures (gethash arm pressures-))
           (setq suctioningp
-                (< (gethash arm pressure-)
-                   (cond
-                     ((eq arm :rarm) rarm-pressure-threshold-)
-                     ((eq arm :larm) larm-pressure-threshold-))))
+                (< (car (reverse pressures)) p-thre))
+          (unless suctioningp
+            (let ((tcount 0))
+              (dolist (p pressures)
+                (when (< p p-thre) (incf tcount)))
+              (when (> tcount (/ (length pressures) 2)) (setq suctioningp t))))
           ;; FIXME: cannot detect grasping small objects
           ;; (setq pinchingp
           ;;       (and (or
@@ -430,7 +445,6 @@
           ;;              (and (>= (aref finger-av 0) 45) (< (aref finger-av 1) 155)))
           ;;            (< (send self :get-finger-load arm) -0.55)))
           (setq pinchingp t)
-          (send self :spin-once)
           (cond ((eq type :suction) suctioningp)
                 ((eq type :pinch) pinchingp)
                 ((null type) (or suctioningp pinchingp))
@@ -484,6 +498,16 @@
               (if (send self :graspingp arm)
                 (progn
                   (ros::ros-info "[:wait-interpolation-until] Detected grasping")
+                  t)
+                nil))
+          conds))
+      (when (member :ungrasp args)
+        (ros::ros-info "[:wait-interpolation-until] Prepare for ungrasp")
+        (pushback
+          #'(lambda ()
+              (if (not (send self :graspingp arm))
+                (progn
+                  (ros::ros-info "[:wait-interpolation-until] Detected ungrasping")
                   t)
                 nil))
           conds))
@@ -578,11 +602,12 @@
     (&optional (arm :arms))
     (send self :start-grasp arm)
     (dolist (l/r (if (eq arm :arms) (list :rarm :larm) (list arm)))
-      (let (min-pressure)
+      (let (pressure min-pressure)
         (dotimes (i 7)
           (send self :spin-once)
-          (when (or (null min-pressure) (< (gethash l/r pressure-) min-pressure))
-            (setq min-pressure (gethash l/r pressure-)))
+          (setq pressure (car (reverse (gethash l/r pressures-))))
+          (when (or (null min-pressure) (< pressure min-pressure))
+            (setq min-pressure pressure))
           (unix::sleep 1))
         (cond ((eq l/r :larm)
                (setq larm-pressure-threshold- (- min-pressure 15)))
@@ -600,7 +625,13 @@
       (sethash :right (gethash l/r proximity-init-values-)
                (send self :get-proximity l/r :right :raw t))
       ;; TODO: decide proper threshold 100 -> ???
-      (setq proximity-threshold- 100))))
+      (setq proximity-threshold- 100)))
+  (:speak
+    (msg &key (wait nil))
+    (assert (stringp msg) (format nil "Invalid msg, though string is expected: ~a" msg))
+    (speak-en msg :wait wait)
+    )
+  )
 
 (defclass jsk_arc2017_baxter::baxter-moveit-environment
   :super moveit-environment)
@@ -627,3 +658,18 @@
                        (send self :search-link-from-name "right_gripper_pad_with_base")))
                (cons :joint-list (append (send robot :larm :joint-list)
                                          (send robot :rarm :joint-list)))))))
+
+(defun jsk_arc2017_baxter::baxter-init
+  (&key (type :default-controller) (moveit nil))
+  (let (mvit-env mvit-rb)
+    (when moveit
+      (setq mvit-env (instance jsk_arc2017_baxter::baxter-moveit-environment))
+      (setq mvit-rb (instance jsk_arc2017_baxter::baxter-robot :init)))
+    (when (not (boundp '*ri*))
+      (setq *ri* (instance jsk_arc2017_baxter::baxter-interface :init
+                           :type type
+                           :moveit-environment mvit-env
+                           :moveit-robot mvit-rb)))
+    (when (not (boundp '*baxter*))
+      (setq *baxter* (instance jsk_arc2017_baxter::baxter-robot :init))
+      (send *baxter* :angle-vector (send *ri* :state :potentio-vector)))))

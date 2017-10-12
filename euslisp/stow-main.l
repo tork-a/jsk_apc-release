@@ -8,6 +8,8 @@
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
 (require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
 
+(make-random-state t)
+
 (defun make-stowing-state-machine ()
   (setq *sm*
         (make-state-machine
@@ -32,16 +34,18 @@
             (:change-grasp-style !-> :return-from-pick-object)
             (:return-from-pick-object -> :check-picking-fail-count)
             (:check-picking-fail-count -> :wait-for-opposite-arm-start-picking)
-            (:check-picking-fail-count !-> :wait-for-opposite-arm)
+            (:check-picking-fail-count !-> :calib-prismatic-joint)
             (:verify-object -> :set-target-bin)
             (:verify-object !-> :return-object)
             (:return-object -> :check-picking-fail-count)
             (:set-target-bin -> :place-object)
             (:set-target-bin !-> :return-object)
             (:place-object -> :return-from-place-object)
-            (:return-from-place-object -> :wait-for-opposite-arm)
-            (:wait-for-opposite-arm-start-picking -> :wait-for-opposite-arm)
-            (:wait-for-opposite-arm-start-picking !-> :wait-for-opposite-arm-start-picking))
+            (:return-from-place-object -> :calib-prismatic-joint)
+            (:wait-for-opposite-arm-start-picking -> :calib-prismatic-joint)
+            (:wait-for-opposite-arm-start-picking !-> :wait-for-opposite-arm-start-picking)
+            (:calib-prismatic-joint -> :wait-for-opposite-arm)
+            (:calib-prismatic-joint !-> :calib-prismatic-joint))
           '((:init
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :init)
@@ -64,7 +68,7 @@
             (:recognize-object
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :recognize-object)
-                 (send *ti* :recognize-object *arm* :trial-times 10)))
+                 (send *ti* :recognize-object *arm* :trial-times 3)))
             (:return-from-recognize-object
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :return-from-recognize-object)
@@ -73,7 +77,7 @@
             (:check-recognize-fail-count
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :check-recognize-fail-count)
-                 (send *ti* :check-recognize-fail-count *arm*)))
+                 (send *ti* :check-recognize-fail-count *arm* :count-limit 10)))
             (:check-can-start-picking
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :check-can-start-picking)
@@ -81,7 +85,7 @@
             (:check-start-picking-fail-count
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :check-start-picking-fail-count)
-                 (send *ti* :check-start-picking-fail-count *arm*)))
+                 (send *ti* :check-start-picking-fail-count *arm* :count-limit 5)))
             (:change-grasp-style
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :change-grasp-style)
@@ -90,10 +94,6 @@
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :pick-object)
                  (send *ti* :pick-object *arm*)))
-            (:check-trial-fail-count
-              '(lambda (userdata)
-                 (send *ti* :update-state *arm* :check-trial-fail-count)
-                 (send *ti* :check-trial-fail-count *arm*)))
             (:return-from-pick-object
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :return-from-pick-object)
@@ -130,14 +130,21 @@
               '(lambda (userdata)
                  (send *ti* :update-state *arm* :wait-for-opposite-arm-start-picking)
                  (send *ti* :check-can-start *arm* :wait-for-opposite-arm
-                       :wait-for-opposite-arm-start-picking))))
+                       :wait-for-opposite-arm-start-picking)))
+            (:calib-prismatic-joint
+              '(lambda (userdata)
+                 (send *ti* :update-state *arm* :calib-prismatic-joint)
+                 (send *ti* :calib-prismatic-joint *arm*))))
           '(:init)
           '(:finish))))
 
 
 (defun stow-init (&key (ctype :default-controller) (calib-pressure t) (moveit nil))
   (jsk_arc2017_baxter::stow-init :ctype ctype :moveit moveit)
-  (when moveit (send *ti* :wipe-all-scene))
+  (when moveit
+    (send *ti* :wipe-all-scene)
+    (send *ti* :add-workspace-scene)
+    )
   (send *ri* :gripper-servo-on)
   ;; initialize fingers
   (send *ri* :move-hand :rarm
@@ -148,7 +155,7 @@
         (send *baxter* :hand-grasp-pre-pose :rarm :opposed) 1000 :wait nil)
   (send *ri* :move-hand :larm
         (send *baxter* :hand-grasp-pre-pose :larm :opposed) 1000)
-  (send *ri* :angle-vector (send *baxter* :fold-pose-back))
+  (send *ri* :angle-vector (send *baxter* :arc-reset-pose))
   (send *ri* :wait-interpolation)
   (when calib-pressure
     (send *ri* :calib-pressure-threshold :rarm)
