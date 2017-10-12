@@ -1,0 +1,103 @@
+<launch>
+  <arg name="INPUT_CANDIDATES" />
+  <arg name="INPUT_CLOUD" />
+  <arg name="INPUT_INFO" />
+  <arg name="INPUT_PROBA_IMAGE" />
+  <arg name="NODELET_MANAGER" />
+
+  <node name="cluster_indices_to_indices"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/ClusterPointIndicesToPointIndices $(arg NODELET_MANAGER)">
+    <remap from="~input" to="cluster_indices_decomposer_target/cluster_indices" />
+    <rosparam>
+      index: 0
+    </rosparam>
+  </node>
+  <node name="point_indices_to_mask_image"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl_utils/PointIndicesToMaskImage $(arg NODELET_MANAGER)">
+    <remap from="~input" to="cluster_indices_to_indices/output" />
+    <remap from="~input/image" to="resize_label/image" />  <!-- x0.5 -->
+  </node>
+  <node name="resize_mask_image"
+        pkg="nodelet" type="nodelet"
+        args="load image_proc/resize $(arg NODELET_MANAGER)">
+    <remap from="image" to="point_indices_to_mask_image/output" />
+    <rosparam>
+      use_scale: true
+      scale_height: 2.0
+      scale_width: 2.0
+    </rosparam>
+  </node>
+
+  <node name="apply_mask_to_proba_image"
+        pkg="jsk_arc2017_common" type="apply_mask_to_proba_image.py" >
+    <remap from="~input_proba" to="$(arg INPUT_PROBA_IMAGE)" />
+    <remap from="~input_mask" to="resize_mask_image/image" />
+    <rosparam>
+      approximate_sync: true
+      queue_size: 30
+    </rosparam>
+  </node>
+
+  <node name="image_buffer"
+        pkg="jsk_arc2017_common" type="image_buffer.py" >
+    <rosparam>
+      input_topics:
+        - apply_mask_to_proba_image/output
+        - left/rgb/image_rect_color
+      approximate_sync: true
+      queue_size: 500
+      rate: 5
+    </rosparam>
+  </node>
+
+  <node name="apply_context_to_label_proba_by_scale"
+        pkg="jsk_perception" type="apply_context_to_label_probability" >
+    <remap from="~input" to="image_buffer/output_0" />
+    <remap from="~input/candidates" to="$(arg INPUT_CANDIDATES)" />
+    <rosparam>
+      use_topic: true
+      candidates_fixed: [0, 41]
+    </rosparam>
+  </node>
+
+  <node name="probability_image_classifier"
+        pkg="jsk_perception" type="probability_image_classifier.py" >
+    <remap from="~input" to="apply_context_to_label_proba_by_scale/output" />
+    <remap from="~target_names" to="label_names" />
+    <rosparam>
+      ignore_labels: [0, 41]
+    </rosparam>
+  </node>
+
+  <!--
+  <node name="label_image_classifier"
+        pkg="jsk_perception" type="label_image_classifier.py" >
+    <remap from="~input" to="apply_context_to_label_proba_by_scale/output/label" />
+    <remap from="~target_names" to="label_names" />
+  </node>
+  -->
+
+  <!-- Visualization -->
+  <node name="label_image_decomposer_by_scale"
+        pkg="jsk_perception" type="label_image_decomposer.py">
+    <remap from="~input" to="image_buffer/output_1" />
+    <remap from="~input/label" to="apply_context_to_label_proba_by_scale/output/label" />
+    <remap from="~label_names" to="label_names" />
+    <rosparam>
+      approximate_sync: true
+      queue_size: 30
+    </rosparam>
+  </node>
+
+  <node name="draw_classification_result"
+        pkg="jsk_perception" type="draw_classification_result.py">
+    <remap from="~input/image" to="label_image_decomposer_by_scale/output" />
+    <remap from="~input" to="probability_image_classifier/output" />
+    <rosparam>
+      queue_size: 30
+    </rosparam>
+  </node>
+
+</launch>

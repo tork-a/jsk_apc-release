@@ -1,0 +1,72 @@
+<launch>
+
+  <!-- update source location for collecting data -->
+  <include file="$(find jsk_arc2017_baxter)/launch/setup/include/setup_source_location.xml">
+    <arg name="pick" value="true" />
+    <arg name="task" value="collect_data_in_shelf" />
+  </include>
+
+  <!-- *********************************************************************************** -->
+  <!-- Data collection                                                                     -->
+  <!-- *********************************************************************************** -->
+
+  <group ns="right_hand">
+    <node name="data_collection_server"
+          pkg="jsk_data" type="data_collection_server.py"
+          clear_params="true" output="screen">
+      <rosparam subst_value="true">
+        slop: 0.5
+        save_dir: ~/.ros/jsk_arc2017_baxter/dataset_jsk_v3
+        topics:
+          - name: /right_hand_camera/left/rgb/camera_info
+            msg_class: sensor_msgs/CameraInfo
+            fname: camera_info_right_hand_camera_left.yaml
+            savetype: YAML
+          - name: /right_hand_camera/left/rgb/image_rect_color
+            msg_class: sensor_msgs/Image
+            fname: image.jpg
+            savetype: ColorImage
+          - name: /right_hand_camera/fused/depth_registered/image_rect
+            msg_class: sensor_msgs/Image
+            fname: depth.npz
+            savetype: DepthImage
+          - name: /right_hand_camera/fused/depth_registered/image_rect_view
+            msg_class: sensor_msgs/Image
+            fname: depth_viz.jpg
+            savetype: ColorImage
+          - name: /right_hand/tf_to_transform/output
+            msg_class: geometry_msgs/TransformStamped
+            fname: tf_camera_rgb_from_base.yaml
+            savetype: YAML
+        params:
+          - key: /right_hand/target_bin_name
+            fname: shelf_bin.txt
+            savetype: Text
+          - key: /right_hand/view_frame
+            fname: view_frame.txt
+            savetype: Text
+      </rosparam>
+    </node>
+
+    <node name="tf_to_transform"
+          pkg="jsk_topic_tools" type="tf_to_transform.py">
+      <rosparam>
+        parent_frame_id: base
+        child_frame_id: right_hand_camera_left_rgb_optical_frame
+        duration: 1
+        rate: 10
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="collect_data_in_shelf_main"
+        pkg="jsk_arc2017_baxter" type="collect-data-in-shelf-main.l"
+        output="screen">
+  </node>
+
+  <node name="rqt_yn_btn"
+        pkg="jsk_rqt_plugins" type="rqt_yn_btn">
+    <remap from="~" to="/rviz/yes_no_button" />
+  </node>
+
+</launch>
