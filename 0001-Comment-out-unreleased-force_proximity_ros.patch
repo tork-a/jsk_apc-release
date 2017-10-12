@@ -1,0 +1,34 @@
+From a538418dd03de51b0275fabffaf808ba92ec31fa Mon Sep 17 00:00:00 2001
+From: Kentaro Wada <www.kentaro.wada@gmail.com>
+Date: Thu, 12 Oct 2017 19:10:45 +0900
+Subject: [PATCH] Comment out unreleased force_proximity_ros
+
+---
+ package.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/package.xml b/package.xml
+index 3fe6be3..b88a722 100644
+--- a/package.xml
++++ b/package.xml
+@@ -18,7 +18,7 @@
+   <build_depend>baxter_core_msgs</build_depend>
+   <build_depend>controller_manager</build_depend>
+   <build_depend>dynamixel_msgs</build_depend>
+-  <build_depend>force_proximity_ros</build_depend>
++  <!-- <build_depend>force_proximity_ros</build_depend> -->
+   <build_depend>hardware_interface</build_depend>
+   <build_depend>jsk_2016_01_baxter_apc</build_depend>
+   <build_depend>jsk_apc2016_common</build_depend>
+@@ -31,7 +31,7 @@
+   <run_depend>baxter_core_msgs</run_depend>
+   <run_depend>controller_manager</run_depend>
+   <run_depend>dynamixel_msgs</run_depend>
+-  <run_depend>force_proximity_ros</run_depend>
++  <!-- <run_depend>force_proximity_ros</run_depend> -->
+   <run_depend>hardware_interface</run_depend>
+   <run_depend>joint_trajectory_controller</run_depend>
+   <run_depend>jsk_2015_05_baxter_apc</run_depend>
+-- 
+1.9.1
+
