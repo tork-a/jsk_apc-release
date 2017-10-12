@@ -1,9 +1,9 @@
 ;; -*- mode: lisp;-*-
 
 (require "package://baxtereus/baxter-interface.l")
-(require "package://jsk_2015_05_baxter_apc/euslisp/jsk_2015_05_baxter_apc/util.l")
-(require "package://jsk_2016_01_baxter_apc/euslisp/jsk_2016_01_baxter_apc/baxter.l")
-(require "package://jsk_2016_01_baxter_apc/euslisp/jsk_2016_01_baxter_apc/util.l")
+(require "package://jsk_2015_05_baxter_apc/euslisp/lib/util.l")
+(require "package://jsk_2016_01_baxter_apc/euslisp/lib/baxter.l")
+(require "package://jsk_2016_01_baxter_apc/euslisp/lib/util.l")
 
 (ros::load-ros-manifest "jsk_2016_01_baxter_apc")
 
@@ -324,8 +324,8 @@
       (position box-size box-sizes-bak)))
   (:recognize-bin-boxes
     (&key (stamp (ros::time-now)))
-    (let ((box-topic (format nil "publish_bin_boxes/output"))
-          box-msg bin-list)
+    (let ((box-topic (format nil "transformable_bin_markers/output/boxes"))
+          box-msg box-list bin-list)
       (setq box-msg (one-shot-subscribe box-topic
                                         jsk_recognition_msgs::BoundingBoxArray
                                         :timeout 10000
@@ -336,7 +336,7 @@
           (setq box-list (send box-msg :boxes))
           (setq bin-list (list :a :b :c :d :e :f :g :h :i :j :k :l))
           (dolist (bin bin-list)
-            (setf (gethash bin bin-boxes-) (car box-list))
+            (sethash bin bin-boxes- (car box-list))
             (setq box-list (cdr box-list))))
         (ros::ros-fatal "[:recognize-bin-boxes] cannot recognize bin boxes"))))
   (:recognize-order-bin-box
@@ -1100,15 +1100,16 @@
       (setq graspingp (send self :graspingp arm))
       graspingp))
   (:pick-object-in-order-bin
-    (arm &key (n-trial 1) (n-trial-same-pos 1) (do-stop-grasp nil))
-    (let (order-bin-box graspingp object-index avs avs->view)
+    (arm &key (n-trial 1) (n-trial-same-pos 1) (do-stop-grasp nil) (object-index nil))
+    (let (order-bin-box graspingp avs avs->view)
       (if (or
           (null (gethash arm objects-in-order-bin-boxes-))
           (null (gethash arm objects-in-order-bin-coords-)))
         (return-from :pick-object-in-order-bin nil) t)
       ;; (send self :fold-pose-back arm)
       ;; (send self :wait-interpolation)
-      (setq object-index (random (length (gethash arm objects-in-order-bin-boxes-))))
+      (unless object-index
+        (setq object-index (random (length (gethash arm objects-in-order-bin-boxes-)))))
       (dotimes (i n-trial)
         (dotimes (j n-trial-same-pos)
           (unless graspingp
@@ -1118,7 +1119,7 @@
                         :object-index object-index))
             (pushback (send *baxter* :angle-vector) avs))))
       (when do-stop-grasp (unless graspingp (send self :stop-grasp arm)))
-      (send self :angle-vector-sequence (reverse avs) :fast nil 0 :scale 5.0)
+      (send self :angle-vector-sequence-raw (reverse avs) :fast nil 0 :scale 5.0)
       (send self :wait-interpolation)
       (ros::ros-info "[:pick-object] arm:~a in-order-bin -> view-hand-pose" arm)
       (send self :gripper-servo-on arm)
@@ -1126,7 +1127,7 @@
       (if (eq arm :larm)
         (pushback (send *baxter* :view-hand-pose arm :j) avs->view)
         (pushback (send *baxter* :view-hand-pose arm :l) avs->view))
-      (send *ri* :angle-vector-sequence avs->view :fast nil 0 :scale 5.0)
+      (send *ri* :angle-vector-sequence-raw avs->view :fast nil 0 :scale 5.0)
       (send self :wait-interpolation)
       graspingp))
   (:try-to-pick-object-in-order-bin
