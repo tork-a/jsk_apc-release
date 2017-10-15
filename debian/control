@@ -1,0 +1,12 @@
+Source: ros-indigo-jsk-2016-01-baxter-apc
+Section: misc
+Priority: extra
+Maintainer: Hasegawa Shun <pazeshun3684@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-baxter-core-msgs, ros-indigo-baxter-description, ros-indigo-catkin, ros-indigo-collada-urdf, ros-indigo-control-msgs, ros-indigo-controller-manager, ros-indigo-dynamixel-msgs, ros-indigo-euscollada, ros-indigo-hardware-interface, ros-indigo-jsk-2015-05-baxter-apc, ros-indigo-jsk-data, ros-indigo-jsk-tools, ros-indigo-roscpp, ros-indigo-roseus, ros-indigo-roslint, ros-indigo-rostest, ros-indigo-std-msgs, ros-indigo-transmission-interface, ros-indigo-xacro, ruby, ruby-dev
+Homepage: http://wiki.ros.org/jsk_2016_01_baxter_apc
+Standards-Version: 3.9.2
+
+Package: ros-indigo-jsk-2016-01-baxter-apc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-baxter-core-msgs, ros-indigo-baxter-gazebo, ros-indigo-baxter-sim-controllers, ros-indigo-baxter-sim-io, ros-indigo-control-msgs, ros-indigo-controller-manager, ros-indigo-dynamixel-controllers, ros-indigo-dynamixel-msgs, ros-indigo-gazebo-ros, ros-indigo-hardware-interface, ros-indigo-jsk-2015-05-baxter-apc, ros-indigo-jsk-apc2016-common, ros-indigo-jsk-baxter-startup, ros-indigo-jsk-data, ros-indigo-jsk-interactive-marker, ros-indigo-jsk-recognition-msgs, ros-indigo-roscpp, ros-indigo-roseus-mongo, ros-indigo-rosserial-python, ros-indigo-std-msgs, ros-indigo-transmission-interface
+Description: Common stacks for Amazon Picking Challenge 2016
