@@ -1,0 +1,87 @@
+<launch>
+  <arg name="base_name" default="kinect2"/>
+  <arg name="input_depth_image" default="/$(arg base_name)/depth_lowres/image" />
+  <arg name="input_rgb_image" default="/$(arg base_name)/rgb_lowres/image" />
+  <arg name="input_point" default="/$(arg base_name)/depth_lowres/points" />
+  <arg name="input_info" default="/$(arg base_name)/rgb_lowres/camera_info" />
+
+  <arg name="manager" default="icp_manager"/>
+
+  <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" />
+
+  <!-- <node pkg="jsk_pcl_ros" type="border_estimator" name="border_estimator" -->
+  <!--       output="screen"> -->
+  <!--   <remap from="~input" to="$(arg input_point)" /> -->
+  <!--   <remap from="~input_camera_info" to="$(arg input_info)" /> -->
+  <!-- </node> -->
+  <group ns="icp_nodelet">
+    <node pkg="nodelet" type="nodelet" name="border_estimator"
+          args="load jsk_pcl/BorderEstimator /$(arg manager)"
+          output="screen">
+      <remap from="~input" to="$(arg input_point)" />
+      <remap from="~input_camera_info" to="$(arg input_info)" />
+    </node>
+
+    <!-- edge detector -->
+    <!-- <node pkg="jsk_perception" type="edge_detector" name="edge"> -->
+    <!--   <remap from="image" to="$(arg input_rgb_image)" /> -->
+    <!-- </node> -->
+
+    <node pkg="nodelet" type="nodelet" name="edge"
+          args="load jsk_perception/EdgeDetector /$(arg manager)">
+      <remap from="image" to="$(arg input_rgb_image)" />
+    </node>
+    
+    <node pkg="image_view" type="image_view" name="edge_view" >
+      <remap from="image" to="edge/image" />
+    </node>
+    
+    <node pkg="nodelet" type="nodelet"
+          name="mask2pi"
+          args="load jsk_pcl/MaskImageToPointIndices /$(arg manager)"
+          output="screen" clear_params="true">
+      <remap from="~input" to="edge/image" />
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0.0
+        filter_limit_max: 5.0
+        leaf_size: 0.01
+      </rosparam>
+    </node>
+    <node pkg="nodelet" type="nodelet" name="indices_add"
+          args="load jsk_pcl/AddPointIndices /$(arg manager)">
+      <remap from="~input/src1" to="mask2pi/output" />
+      <remap from="~input/src2" to="border_estimator/output_border_indices" />
+      <rosparam>
+        approximate_sync: true
+        use_indices: true
+        negative: false
+        max_queue_size: 5000
+      </rosparam>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="added"
+          args="load pcl/ExtractIndices /$(arg manager)">
+      <remap from="~input" to="$(arg input_point)" />
+      <remap from="~indices" to="mask2pi/output" />
+      <rosparam>
+        approximate_sync: true
+        use_indices: true
+        negative: false
+        max_queue_size: 100
+      </rosparam>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="pass_through_z_edge"
+          args="load pcl/PassThrough /$(arg manager)">
+      <remap from="~input" to="added/output" />
+      <!-- suppose QVGA -->
+      <rosparam>
+        filter_field_name: z
+        filter_limit_min: 0
+        filter_limit_max: 1.0
+        keep_organized: true
+      </rosparam>
+    </node>
+  </group>
+</launch>
