@@ -1,0 +1,81 @@
+- git:
+    local-name: jsk-ros-pkg/jsk_common
+    uri: https://github.com/jsk-ros-pkg/jsk_common.git
+    version: master
+- git:
+    local-name: jsk-ros-pkg/jsk_recognition
+    uri: https://github.com/jsk-ros-pkg/jsk_recognition.git
+    version: master
+# jsk_visualization needs below:
+# https://github.com/jsk-ros-pkg/jsk_visualization/pull/670
+- git:
+    local-name: jsk-ros-pkg/jsk_visualization
+    uri: https://github.com/jsk-ros-pkg/jsk_visualization.git
+    version: master
+# jsk_pr2eus needs belows:
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/306
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/308
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/309
+# https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/310
+- git:
+    local-name: jsk-ros-pkg/jsk_pr2eus
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus.git
+    version: master
+# https://github.com/jsk-ros-pkg/jsk_robot/pull/817
+- git:
+    local-name: jsk-ros-pkg/jsk_robot
+    uri: https://github.com/jsk-ros-pkg/jsk_robot.git
+    version: jsk_apc
+- git:
+    local-name: FOR_ASTRA/openni2_camera
+    uri: https://github.com/ros-drivers/openni2_camera.git
+    version: indigo-devel
+- git:
+    local-name: start-jsk/jsk_apc
+    uri: https://github.com/start-jsk/jsk_apc.git
+    version: master
+- git:
+    local-name: FOR_LATEST_BAXTEREUS/baxter_interface
+    uri: https://github.com/wkentaro/baxter_interface.git
+    version: jsk_apc
+- git:
+    local-name: FOR_PCL1.8/octomap_mapping
+    uri: https://github.com/OctoMap/octomap_mapping.git
+    version: indigo-devel
+- tar:
+    local-name: FOR_PCL1.8/pcl_conversions
+    uri: https://github.com/ros-gbp/pcl_conversions-release/archive/release/indigo/pcl_conversions/0.2.1-0.tar.gz
+    version: pcl_conversions-release-release-indigo-pcl_conversions-0.2.1-0
+- git:
+    local-name: FOR_PCL1.8/perception_pcl
+    uri: https://github.com/ros-perception/perception_pcl.git
+    version: indigo-devel
+- git:
+    local-name: FOR_SIMULATION/baxter_simulator
+    uri: https://github.com/knorth55/baxter_simulator.git
+    version: gripper-sim
+- git:
+    local-name: FOR_SIMULATION/baxter_common
+    uri: https://github.com/knorth55/baxter_common.git
+    version: jsk_apc
+- git:
+    local-name: FOR_GRIPPER_V5/dynamixel_motor
+    uri: https://github.com/pazeshun/dynamixel_motor.git
+    version: gripper-v6-devel
+- git:
+    local-name: FA-I-sensor/force_proximity_ros
+    uri: https://github.com/knorth55/FA-I-sensor.git
+    version: jsk_apc
+- git:
+    local-name: PointCloudLibrary/pcl
+    uri: https://github.com/PointCloudLibrary/pcl.git
+    version: pcl-1.8.0rc2
+- tar:
+    local-name: ros_comm/message_filters
+    uri: https://github.com/ros-gbp/ros_comm-release/archive/release/kinetic/message_filters/1.12.7-0.tar.gz
+    version: ros_comm-release-release-kinetic-message_filters-1.12.7-0
+# http://github.com/start-jsk/jsk_apc/issues/2553
+- git:
+    local-name: ros-drivers/rosserial
+    uri: https://github.com/ros-drivers/rosserial
+    version: 0.7.6
