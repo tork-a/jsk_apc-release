@@ -1,5 +1,0 @@
-string item
-string src
-string dst
----
-bool updated
