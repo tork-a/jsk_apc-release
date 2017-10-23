@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_apc</name>
+  <version>4.1.4</version>
+  <description>
+   <p>Metapackage for Amazon Picking Challenge</p>
+  </description>
+
+  <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
+  <author email="www.kentaro.wada@gmail.com">Kentaro Wada</author>
+  <license>BSD</license>
+  <url>http://wiki.ros.org/jsk_apc</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>jsk_apc2015_common</run_depend>
+  <run_depend>jsk_apc2016_common</run_depend>
+  <run_depend>jsk_arc2017_common</run_depend>
+  <run_depend>jsk_2015_05_baxter_apc</run_depend>
+  <run_depend>jsk_2016_01_baxter_apc</run_depend>
+  <run_depend>jsk_arc2017_baxter</run_depend>
+  <export>
+    <metapackage/>
+  </export>
+</package>
