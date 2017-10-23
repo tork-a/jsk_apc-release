@@ -1,0 +1,12 @@
+Source: ros-indigo-jsk-apc2016-common
+Section: misc
+Priority: extra
+Maintainer: Kentaro Wada <www.kentaro.wada@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin, ros-indigo-cmake-modules, ros-indigo-geometry-msgs, ros-indigo-jsk-data, ros-indigo-jsk-gui-msgs, ros-indigo-jsk-recognition-msgs, ros-indigo-jsk-tools, ros-indigo-message-filters, ros-indigo-message-generation, ros-indigo-pcl-ros, ros-indigo-roscpp, ros-indigo-roslint, ros-indigo-sensor-msgs, ros-indigo-std-msgs, ros-indigo-tf2, ros-indigo-tf2-eigen, ros-indigo-tf2-ros
+Homepage: http://wiki.ros.org/jsk_apc2016_common
+Standards-Version: 3.9.2
+
+Package: ros-indigo-jsk-apc2016-common
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-geometry-msgs, ros-indigo-jsk-data, ros-indigo-jsk-gui-msgs, ros-indigo-jsk-recognition-msgs, ros-indigo-message-filters, ros-indigo-message-runtime, ros-indigo-pcl-ros, ros-indigo-qt-gui-py-common, ros-indigo-resource-retriever, ros-indigo-roscpp, ros-indigo-rqt-gui, ros-indigo-rqt-gui-py, ros-indigo-sensor-msgs, ros-indigo-std-msgs, ros-indigo-tf2, ros-indigo-tf2-eigen, ros-indigo-tf2-ros
+Description: The jsk_apc2016_common package
