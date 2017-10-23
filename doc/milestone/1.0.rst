@@ -1,0 +1,11 @@
+1.0: APC2016 ver1.0
+===================
+
+- Opened: 2016-05-10
+- Ended: 2016-07-08
+
+Goal
+----
+
+Achieve 30pt in pick task on Official APC2016 rule
+
