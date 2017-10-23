@@ -1,0 +1,12 @@
+Source: ros-indigo-jsk-arc2017-common
+Section: misc
+Priority: extra
+Maintainer: Kentaro Wada <www.kentaro.wada@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin, ros-indigo-jsk-data, ros-indigo-message-generation, ros-indigo-roseus, ros-indigo-roslint, ros-indigo-rostest
+Homepage: http://wiki.ros.org/jsk_arc2017_common
+Standards-Version: 3.9.2
+
+Package: ros-indigo-jsk-arc2017-common
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, python-serial, ros-indigo-jsk-apc2016-common, ros-indigo-jsk-data, ros-indigo-jsk-pcl-ros, ros-indigo-jsk-pcl-ros-utils, ros-indigo-jsk-perception, ros-indigo-message-runtime, ros-indigo-rospy
+Description: Common package for Amazon Robotics Challenge 2017 at JSK Lab.
