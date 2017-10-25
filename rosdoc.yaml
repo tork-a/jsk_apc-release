@@ -1,4 +1,0 @@
-- builder: sphinx
-  name: Documentation
-  sphinx_root_dir: doc
-  output_dir: doc

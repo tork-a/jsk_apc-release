@@ -1,37 +1,31 @@
-=======
-jsk_apc
-=======
+jsk_2015_05_baxter_apc
+======================
 
-**jsk_apc** is a stack of packages for the Amazon Picking Challenge.
-
-The code is open source, and `available on github`_.
-
-.. _available on github: http://github.com/start-jsk/jsk_apc
+**jsk_2015_05_baxter_apc** is ROS package for Amazon Picking Challenge in May 2015.
 
 
 .. toctree::
    :maxdepth: 1
    :glob:
-   :caption: Milestones
 
-   milestone/*
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: General Contents
-
-   apc2016_rules
-   tips_faq
+   apc2015_demo
+   apc2015_demo_sim
+   nodes/index
+   euslisp/index
 
 
-.. toctree::
-   :maxdepth: 2
-   :caption: ROS Packages
+Shared Files
+------------
 
-   jsk_apc2015_common/index
-   jsk_2015_05_baxter_apc/index
-   jsk_apc2016_common/index
-   jsk_2016_01_baxter_apc/index
-   jsk_arc2017_common/index
-   jsk_arc2017_baxter/index
+READONLY: https://drive.google.com/drive/u/1/folders/0B9P1L--7Wd2vS1pjRENUMlFPYlU
+
+Google Drive folder is shared.
+There are shared files like log files and datasets.
+
+
+Testing
+-------
+
+.. code-block:: bash
+
+  catkin run_tests jsk_2015_05_baxter_apc --no-deps
