@@ -2,6 +2,17 @@
 Changelog for package jsk_arc2017_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.8 (2017-10-26)
+------------------
+
+4.1.7 (2017-10-26)
+------------------
+* 4.1.6
+* Update CHANGELOG.rst
+* 4.1.5
+* Update CHANGELOG.rst
+* Contributors: Kentaro Wada
+
 4.1.4 (2017-10-15)
 ------------------
 * Skip ResourceNotFound error to pass build on build.ros.org
