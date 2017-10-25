@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>jsk_apc2015_common</name>
+  <version>4.1.6</version>
+  <description>Common stacks for Amazon Picking Challenge 2015</description>
+
+  <maintainer email="www.kentaro.wada@gmail.com">Kentaro Wada</maintainer>
+  <author email="www.kentaro.wada@gmail.com">Kentaro Wada</author>
+  <license>BSD</license>
+  <url>http://wiki.ros.org/jsk_apc2015_common</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- list dependencies in alphabetical order -->
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>jsk_demo_common</run_depend>
+
+  <test_depend>roslint</test_depend>
+
+  <export>
+    <gazebo_ros gazebo_model_path="${prefix}/models" />
+  </export>
+
+</package>
