@@ -1,4 +1,4 @@
-From d65ae14af63981939111e51e6fe3cf30a08fefd6 Mon Sep 17 00:00:00 2001
+From e1d2e47e5153dd1ee9eaf689e9f6355545957950 Mon Sep 17 00:00:00 2001
 From: Kentaro Wada <www.kentaro.wada@gmail.com>
 Date: Thu, 12 Oct 2017 19:10:45 +0900
 Subject: [PATCH] Comment out unreleased force_proximity_ros
@@ -8,7 +8,7 @@ Subject: [PATCH] Comment out unreleased force_proximity_ros
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/package.xml b/package.xml
-index ca18020..bcee809 100644
+index 86728a2..19e3d98 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -18,7 +18,7 @@
@@ -19,8 +19,8 @@ index ca18020..bcee809 100644
 +  <!-- <build_depend>force_proximity_ros</build_depend> -->
    <build_depend>hardware_interface</build_depend>
    <build_depend>jsk_2016_01_baxter_apc</build_depend>
-   <build_depend>jsk_apc2016_common</build_depend>
-@@ -31,7 +31,7 @@
+   <build_depend>message_generation</build_depend>
+@@ -30,7 +30,7 @@
    <run_depend>baxter_core_msgs</run_depend>
    <run_depend>controller_manager</run_depend>
    <run_depend>dynamixel_msgs</run_depend>
