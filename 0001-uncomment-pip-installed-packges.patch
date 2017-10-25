@@ -1,4 +1,4 @@
-From 704fa6bfa8f45d93ec23e752d74a689c3397a772 Mon Sep 17 00:00:00 2001
+From 95e0cbd7c8cf10dd868cf6b58a949098f14588dd Mon Sep 17 00:00:00 2001
 From: Kei Okada <kei.okada@gmail.com>
 Date: Fri, 24 Jun 2016 11:40:54 +0900
 Subject: [PATCH] uncomment pip installed packges
@@ -8,7 +8,7 @@ Subject: [PATCH] uncomment pip installed packges
  1 file changed, 1 deletion(-)
 
 diff --git a/package.xml b/package.xml
-index 05c32cc..9ada70e 100644
+index ca97d95..a54a7d4 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -58,7 +58,6 @@
