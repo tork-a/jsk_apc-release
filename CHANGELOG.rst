@@ -2,6 +2,23 @@
 Changelog for package jsk_arc2017_baxter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.8 (2017-10-26)
+------------------
+* Fix missing build_depends for testing with find_package
+* Contributors: Kentaro Wada
+
+4.1.7 (2017-10-26)
+------------------
+* They must be <run_depend> to generate eus messages for them
+* 4.1.6
+* Update CHANGELOG.rst
+* Fix redundant test_depend vs run_depend
+* Fix build error on build.ros.org
+* 4.1.5
+* Update CHANGELOG.rst
+* Install roslint + rostest for testing jsk_arc2017_baxter
+* Contributors: Kentaro Wada
+
 4.1.4 (2017-10-15)
 ------------------
 
