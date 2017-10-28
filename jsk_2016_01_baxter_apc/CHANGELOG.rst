@@ -2,6 +2,11 @@
 Changelog for package jsk_2016_01_baxter_apc
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.1.9 (2017-10-28)
+------------------
+* Install necessary directories
+* Contributors: Kentaro Wada
+
 4.1.8 (2017-10-26)
 ------------------
 
