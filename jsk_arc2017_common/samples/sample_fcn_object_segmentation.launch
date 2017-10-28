@@ -1,0 +1,71 @@
+<launch>
+
+  <arg name="GPU" default="0" />
+
+  <node name="image_publisher"
+        pkg="jsk_perception" type="image_publisher.py">
+    <rosparam subst_value="true">
+      file_name: $(find jsk_arc2017_common)/samples/data/right_astra_hand_with_unknown.jpg
+      # file_name: $(find jsk_arc2017_common)/samples/data/right_astra_hand_pick_shelfv1.jpg
+      encoding: rgb8
+      publish_info: false
+      rate: 30
+    </rosparam>
+  </node>
+
+  <arg name="INPUT_IMAGE" value="image_publisher/output" />
+
+  <arg name="NODELET_MANAGER" value="nodelet_manager" />
+  <node name="$(arg NODELET_MANAGER)"
+        pkg="nodelet" type="nodelet" args="manager" />
+
+  <include file="$(find jsk_arc2017_common)/launch/object_segmentation_3d.launch">
+    <arg name="NODELET_MANAGER" value="$(arg NODELET_MANAGER)" />
+    <arg name="INPUT_IMAGE" value="$(arg INPUT_IMAGE)" />
+    <arg name="INPUT_CLOUD" value="/none" />
+    <arg name="INPUT_CANDIDATES" value="/none" />
+  </include>
+
+  <node name="label_image_decomposer1"
+        pkg="jsk_perception" type="label_image_decomposer.py">
+    <remap from="~input" to="apply_context_to_label_proba/output/label" />
+    <remap from="~input/label" to="apply_context_to_label_proba/output/label" />
+    <rosparam>
+      queue_size: 50
+    </rosparam>
+  </node>
+  <node name="label_image_decomposer2"
+        pkg="jsk_perception" type="label_image_decomposer.py">
+    <remap from="~input" to="apply_context_to_label_proba/output/label" />
+    <remap from="~input/label" to="apply_context_to_label_proba/output/label" />
+    <remap from="~label_names" to="label_names" />
+    <rosparam>
+      queue_size: 50
+    </rosparam>
+  </node>
+  <node name="label_image_decomposer3"
+        pkg="jsk_perception" type="label_image_decomposer.py">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <remap from="~input/label" to="apply_context_to_label_proba/output/label" />
+    <remap from="~label_names" to="label_names" />
+    <rosparam>
+      queue_size: 50
+    </rosparam>
+  </node>
+
+  <node name="tile_image"
+        pkg="jsk_perception" type="tile_image.py">
+    <rosparam subst_value="true">
+      input_topics:
+        - $(arg INPUT_IMAGE)
+        - /label_image_decomposer1/output/label_viz
+        - /label_image_decomposer2/output/label_viz
+        - /label_image_decomposer3/output/label_viz
+    </rosparam>
+  </node>
+  <node name="image_view"
+        pkg="image_view" type="image_view">
+    <remap from="image" to="tile_image/output" />
+  </node>
+
+</launch>
