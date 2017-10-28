@@ -1,6 +1,0 @@
-string item
-uint8 trial_time
----
-bool success
-string message
-string style
