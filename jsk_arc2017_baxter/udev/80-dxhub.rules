@@ -1,3 +1,0 @@
-# Create symlink /dev/r_dxhub and /dev/l_dxhub
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{product}=="E104", MODE="0666", SYMLINK+="r_dxhub"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{product}=="LEFT DXHUB", MODE="0666", SYMLINK+="l_dxhub"
