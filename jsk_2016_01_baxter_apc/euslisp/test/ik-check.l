@@ -1,0 +1,116 @@
+#!/usr/bin/env roseus
+;; *able* : ik-solvable range in either arm
+;; *larm-able* : ik-solvable range only in left arm
+;; *rarm-able* : ik-solvable range only in right arm
+;; *disbale* : ik-unsolvable range in both arms
+
+(load "package://jsk_2015_05_baxter_apc/euslisp/test/data/bin-cubes-alist.l")
+(require "package://jsk_2016_01_baxter_apc/euslisp/lib/baxter.l")
+(load "package://jsk_2015_05_baxter_apc/euslisp/lib/util.l")
+
+(defun check-init ()
+  (setq *baxter* (instance jsk_2016_01_baxter_apc::baxter-robot :init))
+  (setq *cubes* (mapcar #'cdr *bin-cubes-alist*))
+  (setq *bin-keys* (list :a :b :c :d :e :f :g :h :i :j :k :l))
+  (setq *able* nil)
+  (setq *larm-able* nil)
+  (setq *rarm-able* nil)
+  (setq *disable* nil)
+  (setq *pos-bin-list* nil)
+  (objects (list *baxter* *cubes*))
+  )
+
+(defun dump-range ()
+  (dump-loadable-structure "ik-range.l" *baxter* *able* *larm-able* *rarm-able* *disable*))
+
+(defun visualize ()
+  (objects (list *baxter* *able* *disable*)))
+
+(defun check-baxter-ik-all-bin (&optional (step-dist 100))
+  (check-init)
+  (dolist (key *bin-keys*)
+    (format t "bin :~A~%" key)
+    (setq cube (cdr (assoc key *bin-cubes-alist*)))
+    (setq dx (x-of-cube cube))
+    (setq dy (y-of-cube cube))
+    (setq dz (z-of-cube cube))
+    (setq x (elt (send (send cube :worldcoords) :pos) 0))
+    (setq y (elt (send (send cube :worldcoords) :pos) 1))
+    (setq z (elt (send (send cube :worldcoords) :pos) 2))
+    (setq pos-list nil)
+
+    (do ((tmp-x (+ (- x (/ dx 2)) (/ step-dist 2)) (+ tmp-x step-dist)))
+      ((> tmp-x (+ x (/ dx 2))) t)
+      (do ((tmp-y (+ (- y (/ dy 2)) (/ step-dist 2)) (+ tmp-y step-dist)))
+        ((> tmp-y (+ y (/ dy 2))) t)
+        (do ((tmp-z (+ (- z (/ dz 2)) (/ step-dist 2)) (+ tmp-z step-dist)))
+          ((> tmp-z (+ z (/ dz 2))) t)
+          (setq pos (float-vector tmp-x tmp-y tmp-z))
+          (format t "X: ~A~%Y: ~A~%Z: ~A~%" tmp-x tmp-y tmp-z)
+          (setq larm-bool t)
+          (setq rarm-bool t)
+          (send *baxter* :reset-pose)
+          (if (send *baxter* :larm :inverse-kinematics
+                    (make-cascoords :pos pos)
+                    :use-gripper t
+                    :rotation-axis :z
+                    :debug-view :no-message)
+            (format t "success to solve ik in left arm~%")
+            (setq larm-bool nil))
+          (send *baxter* :reset-pose)
+          (if (send *baxter* :rarm :inverse-kinematics
+                    (make-cascoords :pos pos)
+                    :use-gripper t
+                    :rotation-axis :z
+                    :debug-view :no-message)
+            (format t "success to solve ik in right arm~%")
+            (setq rarm-bool nil))
+          (if (or larm-bool rarm-bool)
+              (progn
+                (cond
+                  ((and larm-bool (not rarm-bool))
+                    (setq larm-step-cube (make-cube step-dist step-dist step-dist :pos pos))
+                    (send larm-step-cube :set-color :blue)
+                    (pushback larm-step-cube *larm-able*)
+                    )
+                  ((and (not larm-bool) rarm-bool)
+                    (setq rarm-step-cube (make-cube step-dist step-dist step-dist :pos pos))
+                    (send rarm-step-cube :set-color :yellow)
+                    (pushback rarm-step-cube *rarm-able*)
+                    )
+                  (t nil)
+                  )
+                (setq step-cube (make-cube step-dist step-dist step-dist :pos pos))
+                (send step-cube :set-color :green)
+                (pushback step-cube *able*)
+                )
+              (progn
+                (setq dis-step-cube (make-cube step-dist step-dist step-dist :pos pos))
+                (send dis-step-cube :set-color :red)
+                (pushback dis-step-cube *disable*)
+                (format t "failed to solve ik in both arm~%")
+                (pushback pos pos-list)
+                )
+              )
+          )
+        )
+      )
+    (pushback key *pos-bin-list*)
+    (pushback pos-list *pos-bin-list*)
+    )
+  (dolist (key *bin-keys*)
+    (setq x-list (mapcar #'(lambda (vec) (aref vec 0)) (cadr (member key *pos-bin-list*))))
+    (if x-list
+      (format t "~A: solvable x-axis depth is ~A~%" key (apply #'min x-list))
+      (format t "~A: there is no ik-unsolvable region~%" key)
+      )
+    )
+  )
+
+(warn "~% Commands ~%")
+(warn "*able* : ik-solvable range in either arm~%")
+(warn "*larm-able* : ik-solvable range only in left arm~%")
+(warn "*rarm-able* : ik-solvable range only in right~%")
+(warn "*disbale* : ik-unsolvable range in both arms~%")
+(warn "(check-init)     : initialize check env~%")
+(warn "(check-baxter-ik-all-bin) : start check ik solvable range~%~%")
