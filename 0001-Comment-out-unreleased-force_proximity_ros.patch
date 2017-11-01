@@ -1,4 +1,4 @@
-From e80b8d5caf3d30a180fb98f05a88e53af233119b Mon Sep 17 00:00:00 2001
+From 0b0fcff7b27328a07434c46b0ac4d5876f8970a6 Mon Sep 17 00:00:00 2001
 From: Kentaro Wada <www.kentaro.wada@gmail.com>
 Date: Thu, 12 Oct 2017 19:10:45 +0900
 Subject: [PATCH] Comment out unreleased force_proximity_ros
@@ -8,7 +8,7 @@ Subject: [PATCH] Comment out unreleased force_proximity_ros
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/package.xml b/package.xml
-index 1c4fe9d..56ba43f 100644
+index 85a29fc..8b901fa 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -18,7 +18,7 @@
