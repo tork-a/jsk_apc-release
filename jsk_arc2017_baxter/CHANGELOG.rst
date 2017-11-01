@@ -2,6 +2,14 @@
 Changelog for package jsk_arc2017_baxter
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.2.0 (2017-11-01)
+------------------
+* Adjust right hand astra camera
+* Fix offset of place object
+* Remove rack for cardboard boxes
+* Sanity check for /scaleX/output topics
+* Contributors: Kentaro Wada
+
 4.1.9 (2017-10-28)
 ------------------
 * Install necessary directories
