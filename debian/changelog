@@ -1,0 +1,260 @@
+ros-indigo-jsk-apc (4.2.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Tue, 31 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.9-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 27 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.8-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 25 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.7-0trusty) trusty; urgency=high
+
+  * 4.1.6
+  * Update CHANGELOG.rst
+  * 4.1.5
+  * Update CHANGELOG.rst
+  * Contributors: Kentaro Wada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 25 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.6-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Mon, 23 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.5-0trusty) trusty; urgency=high
+
+  * 4.1.4
+  * Update CHANGELOG
+  * Contributors: Kentaro Wada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Sun, 22 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.4-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Sat, 14 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.3-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 11 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.2-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Tue, 10 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.1-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Mon, 09 Oct 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.1.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 11 Aug 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.9-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 28 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.8-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 28 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.7-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 27 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.6-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 27 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.5-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 27 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.4-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 26 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.3-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 26 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.2-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 26 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.1-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Tue, 25 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (4.0.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Sun, 23 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.3.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 14 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.2.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 05 Jul 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.1.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 29 Jun 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.0.3-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 17 May 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.0.2-0trusty) trusty; urgency=high
+
+  * Put in order tags in CHANGELOG.rst
+  * Contributors: Kentaro Wada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Wed, 17 May 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.0.1-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Mon, 15 May 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (3.0.0-0trusty) trusty; urgency=high
+
+  * add jsk_arc2017 package in jsk_apc
+  * Update package.xml
+  * Add link to wiki
+  * Contributors: Kentaro Wada, Shingo Kitagawa
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Sun, 07 May 2017 15:00:00 -0000
+
+ros-indigo-jsk-apc (2.0.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 21 Oct 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (1.5.1-0trusty) trusty; urgency=high
+
+  * 1.5.0
+  * Update CHANGELOG.rst to release 1.5.0
+  * 1.0.0
+  * Update CHANGELOG.rst
+  * 0.8.1
+  * update CHANGELOG
+  * 0.8.1
+  * Update CHANGELOG.rst for 0.8.0
+  * Contributors: Kei Okada, Kentaro Wada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 14 Jul 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (1.5.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Fri, 08 Jul 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (1.0.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 07 Jul 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.8.1-0trusty) trusty; urgency=high
+
+  * Update CHANGELOG.rst for 0.8.0
+  * Contributors: Kentaro Wada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 23 Jun 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.8.0-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Mon, 30 May 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.2.4-0trusty) trusty; urgency=high
+
+
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Thu, 14 Apr 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.2.3-0trusty) trusty; urgency=high
+
+  * Add packages to metapackage's run_depend
+  * Contributors: Kentaro Wada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Sun, 10 Apr 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.2.2-0trusty) trusty; urgency=high
+
+  * fix gmail for iory and wkentaro
+  * Contributors: Kei Okada
+
+ -- Kentaro Wada <www.kentaro.wada@gmail.com>  Mon, 07 Mar 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.2.1-0trusty) trusty; urgency=high
+
+  * fix maintainer/author in package.xml
+  * Contributors: Kei Okada
+
+ -- Kentaro Wada <wkentaro@gmail.com>  Mon, 07 Mar 2016 15:00:00 -0000
+
+ros-indigo-jsk-apc (0.2.0-0trusty) trusty; urgency=high
+
+  * jsk_2015_apc_common -> jsk_apc2015_common
+  * [jsk_apc] Add jsk_2015_apc_common to run_depend
+  * [jsk_apc] Add Metapackage
+  * Contributors: Kentaro Wada
+
+ -- baxter <baxter@jsk.imi.i.u-tokyo.ac.jp>  Mon, 07 Mar 2016 15:00:00 -0000
+
+

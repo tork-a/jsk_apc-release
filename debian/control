@@ -1,0 +1,12 @@
+Source: ros-indigo-jsk-apc
+Section: misc
+Priority: extra
+Maintainer: Kentaro Wada <www.kentaro.wada@gmail.com>
+Build-Depends: debhelper (>= 9.0.0), ros-indigo-catkin
+Homepage: http://wiki.ros.org/jsk_apc
+Standards-Version: 3.9.2
+
+Package: ros-indigo-jsk-apc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ros-indigo-jsk-2015-05-baxter-apc, ros-indigo-jsk-2016-01-baxter-apc, ros-indigo-jsk-apc2015-common, ros-indigo-jsk-apc2016-common, ros-indigo-jsk-arc2017-baxter, ros-indigo-jsk-arc2017-common
+Description: Metapackage for Amazon Picking Challenge
